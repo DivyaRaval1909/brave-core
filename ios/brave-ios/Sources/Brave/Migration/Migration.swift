@@ -32,6 +32,7 @@ public class BraveProfileMigrations {
     migrateBlockAllCookiesPreference()
     migrateDefaultWalletPreferences()
     migrateShowNewFavoritesPreference()
+    migrateSponsoredAdsEnabledPreference()
   }
 
   private func migrateDefaultUserAgentPreferences() {
@@ -171,6 +172,27 @@ public class BraveProfileMigrations {
         Preferences.NewTabPage.topSitesMode.value = TopSitesMode.none
       }
     }
+  }
+
+  /// Migrates deprecated `backgroundMediaTypeRaw` to `kBraveAdsSponsoredEnabledPrefName`.
+  /// Must run after `Preferences.migrateBackgroundSponsoredImages()`, which
+  /// migrates `backgroundMediaTypeRaw` from the older
+  /// `backgroundSponsoredImages` pref.
+  private func migrateSponsoredAdsEnabledPreference() {
+    Preferences.DeprecatedPreferences.backgroundMediaTypeRaw.migrate { rawValue in
+      profileController.profile.prefs.set(
+        BraveProfileMigrations.isSponsoredAdsEnabled(forBackgroundMediaTypeRawValue: rawValue),
+        forPath: kBraveAdsSponsoredEnabledPrefName
+      )
+    }
+  }
+
+  static func isSponsoredAdsEnabled(forBackgroundMediaTypeRawValue rawValue: Int) -> Bool {
+    // 0 = default images only
+    // 1 = sponsored images
+    // 2 = sponsored images and videos (deprecated; Video NTT was removed, but
+    //     existing users' stored preference may still have this value)
+    rawValue != 0
   }
 }
 
@@ -391,6 +413,12 @@ extension Preferences {
     static let backgroundSponsoredImages = Option<Bool>(
       key: "newtabpage.background-sponsored-images",
       default: true
+    )
+
+    /// Deprecated, superseded by the `kSponsoredEnabled` PrefService pref.
+    static let backgroundMediaTypeRaw = Option<Int>(
+      key: "newtabpage.background-media-type",
+      default: 1  // formerly sponsoredImages
     )
 
     /// Specifies whether the bookmark button is present on toolbar
@@ -679,8 +707,7 @@ extension Preferences {
 
     // Migrate old Background Sponsored Images setting
     DeprecatedPreferences.backgroundSponsoredImages.migrate { isEnabled in
-      Preferences.NewTabPage.backgroundMediaType =
-        isEnabled ? .sponsoredImages : .defaultImages
+      DeprecatedPreferences.backgroundMediaTypeRaw.value = isEnabled ? 1 : 0
     }
 
     Migration.backgroundSponsoredImagesCompleted.value = true
