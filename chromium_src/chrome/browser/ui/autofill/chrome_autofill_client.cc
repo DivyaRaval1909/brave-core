@@ -48,7 +48,7 @@ bool IsPrivateProfile(content::WebContents* web_contents) {
   }
   return (profile_metrics::GetBrowserProfileType(profile) ==
           profile_metrics::BrowserProfileType::kIncognito) ||
-         profile->IsTor();
+         profile->IsEnterpriseIsolatedModeProfile() || profile->IsTor();
 }
 
 #if BUILDFLAG(ENABLE_EMAIL_ALIASES)
@@ -99,6 +99,8 @@ class BraveChromeAutofillClient : public ChromeAutofillClient {
   bool IsAutofillEnabled() const override {
     auto enabled = ChromeAutofillClient::IsAutofillEnabled();
     if (GetProfileType() != profile_metrics::BrowserProfileType::kIncognito &&
+        GetProfileType() !=
+            profile_metrics::BrowserProfileType::kEnterpriseIsolated &&
         GetProfileType() !=
             profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile) {
       return enabled;
