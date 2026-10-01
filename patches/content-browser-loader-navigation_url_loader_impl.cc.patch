@@ -1,5 +1,5 @@
 diff --git a/content/browser/loader/navigation_url_loader_impl.cc b/content/browser/loader/navigation_url_loader_impl.cc
-index f7fcb6e0637db389c7b32993ffc291bb98e26ce6..757bf3ab46c07cbcfdf456b8f30c115c8170dbcf 100644
+index f7fcb6e0637db389c7b32993ffc291bb98e26ce6..8ce66b5cf003f27bf2b228d6e6666fd3c99192e3 100644
 --- a/content/browser/loader/navigation_url_loader_impl.cc
 +++ b/content/browser/loader/navigation_url_loader_impl.cc
 @@ -700,7 +700,9 @@ void NavigationURLLoaderImpl::Start() {
@@ -13,12 +13,14 @@ index f7fcb6e0637db389c7b32993ffc291bb98e26ce6..757bf3ab46c07cbcfdf456b8f30c115c
        FrameTreeNode* frame_tree_node =
            FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
        CHECK(frame_tree_node);
-@@ -2219,6 +2221,11 @@ NavigationURLLoaderImpl::CreateTerminalNonNetworkLoaderFactory(
+@@ -2219,6 +2221,13 @@ NavigationURLLoaderImpl::CreateTerminalNonNetworkLoaderFactory(
      return factory_from_client;
    }
  
 +  if (mojo::PendingRemote<network::mojom::URLLoaderFactory> webui =
-+          MaybeCreateWebUILoaderFactory(frame_tree_node, url)) {
++          MaybeCreateWebUILoaderFactory(
++              WebUIURLLoaderFactoryPasskey::GetPassKey(),
++              frame_tree_node, url)) {
 +    return webui;
 +  }
 +
