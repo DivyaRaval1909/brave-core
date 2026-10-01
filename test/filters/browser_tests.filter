@@ -55,6 +55,7 @@
 # makes the page classification return the result the tests don't expect. Also,
 # kZeroSuggestPrefetchingOnWeb feature is currently disabled by default which
 # causes prefetch not to start.
+-ZeroSuggestPrefetchBrowserTest.PrefetchTriggeredOnNtpLoad
 -ZeroSuggestPrefetchTabHelperBrowserTestOnNTP.StartPrefetch
 -ZeroSuggestPrefetchTabHelperBrowserTestOnSRP.StartPrefetch
 -ZeroSuggestPrefetchTabHelperBrowserTestOnWeb.StartPrefetch
@@ -982,6 +983,7 @@
 -LCPPTimingPredictorBrowserTest.Base
 -SearchEnginePreconnectorDeviceBoundSessionBrowserTest.DoesNotPrewarmWhenDseIsHttp
 -SearchEnginePreconnectorDeviceBoundSessionBrowserTest.DoesNotPrewarmWhenSearchSuggestDisabled
+-SearchEnginePreconnectorDeviceBoundSessionModeBrowserTest.*
 -SuppressesLoadingPredictorOnSlowNetworkBrowserTest.SuppressesOnSlowNetwork
 
 # The tests below are being disabled due to current incompatibilities between
@@ -1163,6 +1165,7 @@
 -DiceBrowserTestWithChromeSigninIPH.SigninRememberedIPH
 -DiceBrowserTestWithExplicitSigninReplaceSyncPromosWithSignInPromos.*
 -DiceBrowserTestWithSyncOptinScreen.EnableHistorySyncOptin
+-DiceBrowserTestWithSyncOptinScreen.NoHistorySyncOptinForNonPrimaryAccount
 -DiceBrowserTestWithSyncOptinScreen.SkipsHistorySyncScreenOnUnexpectedEntryPoint
 -DiceBrowserTestWithoutReplaceSyncPromosWithSignInPromos.*
 -DiceBrowsingDataRemoverBrowserTest.*
@@ -1362,6 +1365,18 @@
 -IndigoImageReplacementManagerCacheDisabledBrowserTest.*
 -TabViewTest.IconDataChanged
 -UiaClient/LeakedNodeDetectionBrowsertest.DetectGhostNodeLeaks/0
+
+# Flaky upstream (via LUCI). Flaky on our CI and fails consistently locally.
+# This appears to be a race condition:
+# On the UI thread, NativeMessagePort creates its dispatcher on the IO thread.
+# On the IO thread, NativeMessageProcessHost::Start() posts LaunchHostProcess()
+# (native_message_process_host.cc:229). LaunchContext::Start() posts
+# LaunchInBackground to the thread pool (launch_context.cc:121), which reads
+# the manifest and then logs. The test only passes if all of that finishes
+# before the UI thread returns and calls StopCapturingLogs(). The output fits
+# this: the host launched and the extension reported [SUCCESS] stopHost, but
+# the log line arrives after capture had stopped.
+-NativeMessagingLaunchLoggingApiTest.SuccessLogsRedactedCommandLine
 
 # Known upstream flake: 10.5% flake rate over 30 days per LUCI Analysis.
 # Null pointer dereference in AutoPipSettingView::OnButtonPressed — widget
@@ -2189,6 +2204,7 @@
 -IncognitoStaticStorageQuotaDisabledTest.IncognitoSession
 -IncognitoStaticStorageQuotaEnabledTest.IncognitoSession
 -StaticStorageQuotaFeatureDisabledTest.RegularSession
+-StaticStorageQuotaFeatureEnabledTest.IncognitoSession
 -StaticStorageQuotaFeatureEnabledTest.RegularSession
 
 # These tests fail because we disable kPrivateMetricsFeature.
@@ -2735,11 +2751,12 @@
 # ChromeContentBrowserClient::WillCreateURLLoaderFactory() runs. Upstream,
 # extensions::WebRequestAPI::MaybeProxyURLLoaderFactory() (called first inside
 # that method) only touches the header client when a loaded extension has the
-# webRequest/declarativeWebRequest permission, which is never true in upstream's
-# own browser_tests. The Brave extension always has that permission, so the
-# WebRequestAPI code unconditionally rebinds the already-bound PendingRemote via
-# InitWithNewPipeAndPassReceiver(), which DCHECKs !is_valid() and crashes.
--SiteTokenBrowserTest.PreservesExistingHeaderClient
+# webRequest/declarativeWebRequest permission; upstream's fixture disables
+# kForceWebRequestProxyForTest to ensure that. The Brave extension always has
+# that permission, so the WebRequestAPI code unconditionally rebinds the
+# already-bound PendingRemote via InitWithNewPipeAndPassReceiver(), which
+# DCHECKs !is_valid() and crashes.
+-SiteTokenChainingBrowserTest.PreservesExistingHeaderClient
 
 # Tests below this point have not been diagnosed or had issues created yet.
 -All/DeclarativeNetRequestBrowserTest.RendererCacheCleared/*
