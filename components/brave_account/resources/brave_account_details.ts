@@ -14,16 +14,16 @@ import {
 } from './brave_account.mojom-webui.js'
 import { showError } from './brave_account_shared.js'
 import { BraveAccountRowBaseElement } from './brave_account_row_base.js'
-import { getCss } from './brave_account_logged_in_row.css.js'
-import { getHtml } from './brave_account_logged_in_row.html.js'
 import { TextTruncator } from './brave_account_text_truncator.js'
+import { getCss } from './brave_account_details.css.js'
+import { getHtml } from './brave_account_details.html.js'
 
-export class BraveAccountLoggedInRowElement extends BraveAccountRowBaseElement<
+export class BraveAccountDetailsElement extends BraveAccountRowBaseElement<
   LoggedInVerificationIntent,
   LoggedInState
 > {
   static get is() {
-    return 'brave-account-logged-in-row'
+    return 'brave-account-details'
   }
 
   static override get styles() {
@@ -70,8 +70,8 @@ export class BraveAccountLoggedInRowElement extends BraveAccountRowBaseElement<
     super.updated(changedProperties)
 
     if ((changedProperties as Map<PropertyKey, unknown>).has('state')) {
-      // The `#email` element only exists in the non-verification row, so stop
-      // truncating while a password-change verification is pending.
+      // Verification markup replaces `#email` while a password change is
+      // awaiting verification.
       const element = this.shadowRoot?.querySelector<HTMLElement>('#email')
       if (element) {
         this.truncator.observe(element, this.state.email)
@@ -109,11 +109,8 @@ export class BraveAccountLoggedInRowElement extends BraveAccountRowBaseElement<
 
 declare global {
   interface HTMLElementTagNameMap {
-    'brave-account-logged-in-row': BraveAccountLoggedInRowElement
+    'brave-account-details': BraveAccountDetailsElement
   }
 }
 
-customElements.define(
-  BraveAccountLoggedInRowElement.is,
-  BraveAccountLoggedInRowElement,
-)
+customElements.define(BraveAccountDetailsElement.is, BraveAccountDetailsElement)

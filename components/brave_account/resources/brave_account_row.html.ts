@@ -11,7 +11,7 @@ import { loadTimeData } from '//resources/js/load_time_data.js'
 // <if expr="not is_android and not is_ios">
 import './brave_account_compact_row.js'
 // </if>
-import './brave_account_logged_in_row.js'
+import './brave_account_details.js'
 import './brave_account_logged_out_row.js'
 import {
   AccountStateFieldTags,
@@ -25,12 +25,12 @@ export function getHtml(this: BraveAccountRowElement) {
     ? nothing
     : whichAccountState(this.state) === AccountStateFieldTags.LOGGED_IN
       ? this.detailed
-        ? html` <brave-account-logged-in-row
+        ? html` <brave-account-details
             .browserProxy=${this.browserProxy}
             .initiatingServiceName=${this.initiatingServiceName}
             .state=${this.state.loggedIn}
           >
-          </brave-account-logged-in-row>`
+          </brave-account-details>`
         : html` <brave-account-compact-row
             class=${this.state.loggedIn?.verification ? 'action-required' : ''}
             .description=${this.state.loggedIn?.verification
