@@ -1,0 +1,27 @@
+/* Copyright (c) 2026 The Brave Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+/* #css_wrapper_metadata_start
+ * #type=style-lit
+ * #css_wrapper_metadata_end */
+
+cr-link-row {
+  /* What Brave's cr-icon override derives --leo-icon-size from. */
+  --iron-icon-width: var(--cr-icon-size);
+
+  font: var(--leo-font-default-semibold);
+}
+
+/* Without containment, cr's #labelWrapper widens to fit the untruncated text,
+   leaving the truncator measuring the text instead of the space for it. */
+.description {
+  contain: inline-size;
+  flex: 1;
+  font: var(--leo-font-small-regular);
+}
+
+:host(.action-required) .description {
+  color: var(--leo-color-systemfeedback-error-text);
+}
