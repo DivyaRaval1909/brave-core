@@ -49,15 +49,19 @@ enum class OSCryptKeyBackupResult {
   kWriteFailed,
 };
 
-// Appends to the backup at `path` when one of the keys change. Blocking:
-// unwraps `encrypted_key` (DPAPI, cheap and local) and, if `app_bound_key` is
-// non-empty, unwraps it too (a round trip to the elevation service). Neither
-// key's live value is compared to the backup's wrapped bytes - DPAPI and
-// app-bound wrapping are both non-deterministic, so comparison happens on
-// the unwrapped value. A key whose unwrapped value already matches any
-// history entry on file (not just the newest - a key can rotate back to an
-// older value) is left alone; a genuinely new value is appended, evicting
-// the oldest entry if the history would exceed `kMaxHistoryEntries`.
+// Appends to the backup at `path` when one of the keys change. For each key,
+// first compares the live wrapped bytes to the newest history entry
+// byte-for-byte - the ordinary case is the key not having rotated at all, so
+// this is almost always a match and nothing is unwrapped. Only when the
+// bytes differ does this fall through to unwrapping: `encrypted_key` (DPAPI,
+// cheap and local) and, if `app_bound_key` is non-empty, it too (a round
+// trip to the elevation service), to compare by unwrapped value against
+// every history entry (not just the newest - a key can rotate back to an
+// older value) - DPAPI and app-bound wrapping are both non-deterministic, so
+// the same key can legitimately produce different wrapped bytes on
+// different launches. A key that matches any entry (wrapped bytes or
+// unwrapped value) is left alone; a genuinely new value is appended,
+// evicting the oldest entry if the history would exceed `kMaxHistoryEntries`.
 OSCryptKeyBackupResult AppendOSCryptKeyBackupIfNew(const base::FilePath& path,
                                                    std::string encrypted_key,
                                                    std::string app_bound_key);

@@ -19,6 +19,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/strings/strcat.h"
+#include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/win/scoped_localalloc.h"
@@ -229,11 +230,12 @@ class OSCryptKeyBackupTest : public ::testing::Test {
   ::testing::NiceMock<MockAppBoundEncryptionOverrides> mock_app_bound_;
   ScopedOverridesForTesting overrides_{mock_app_bound_};
 
- private:
   // The app-bound unwrap path blocks on a `base::ThreadPool::
   // CreateCOMSTATaskRunner` COM-STA task, which requires a live
   // ThreadPoolInstance for the process - a plain SingleThreadTaskEnvironment
-  // doesn't provide one.
+  // doesn't provide one. Also what makes `base::test::RunUntil()` work for
+  // tests that need to wait on a posted background task (e.g.
+  // `MaybeBackupOSCryptKey`'s).
   base::test::TaskEnvironment task_environment_;
 };
 
@@ -589,6 +591,45 @@ TEST_F(OSCryptKeyRestoreTest, DoesNothingWhenTheFeatureIsOff) {
   EXPECT_TRUE(AppBoundKey().empty());
   EXPECT_EQ(OSCryptKeyRestoreResult::kNotAttempted, RecordedResult());
   EXPECT_EQ(OSCryptKeyRestoreResult::kNotAttempted, RecordedAppBoundResult());
+}
+
+// MaybeBackupOSCryptKey shares the same kill switch: with the feature off,
+// no backup file is ever written, even though there's a live key to copy.
+// Feature-off is checked before anything is posted, so there's no async
+// completion to wait for here - the absence is immediate.
+TEST_F(OSCryptKeyRestoreTest, BackupDoesNothingWhenTheFeatureIsOff) {
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(kBraveOSCryptKeyRestore);
+  local_state_.SetString("os_crypt.encrypted_key",
+                         WrapWithDPAPI("wrapped-key"));
+
+  MaybeBackupOSCryptKey(temp_dir_.GetPath(), &local_state_);
+
+  EXPECT_FALSE(base::PathExists(path()));
+}
+
+// With the feature on and a live key present, MaybeBackupOSCryptKey posts a
+// blocking background task that writes the backup file - this exercises
+// that it actually gets posted and completes, not just the policy decided
+// by AppendOSCryptKeyBackupIfNew (covered elsewhere by calling that
+// directly). Polls for the file rather than RunUntilIdle(), since the
+// backup task has no callback to synchronize on directly.
+TEST_F(OSCryptKeyRestoreTest, BackupWritesAFileWhenAKeyIsPresent) {
+  local_state_.SetString("os_crypt.encrypted_key",
+                         WrapWithDPAPI("wrapped-key"));
+
+  MaybeBackupOSCryptKey(temp_dir_.GetPath(), &local_state_);
+
+  ASSERT_TRUE(base::test::RunUntil([&] { return base::PathExists(path()); }));
+  EXPECT_EQ(1u, EncryptedKeyHistorySize());
+}
+
+// No key means nothing to copy yet - a no-op, not even a posted task, so
+// (as above) there's no async completion to wait for.
+TEST_F(OSCryptKeyRestoreTest, BackupDoesNothingWithNoLiveKey) {
+  MaybeBackupOSCryptKey(temp_dir_.GetPath(), &local_state_);
+
+  EXPECT_FALSE(base::PathExists(path()));
 }
 
 // Verify newest-to-oldest: a corrupted newest entry is skipped in favor of
