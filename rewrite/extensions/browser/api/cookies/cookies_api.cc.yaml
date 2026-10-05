@@ -24,4 +24,4 @@ substitutions:
       OnCookieChange substitution above for the same reasoning).
     preempt_function_impl:
       function_name: CookiesEventRouter::OnRelatedOffTheRecordBrowserContextCreated
-      return_if: 'Profile::FromBrowserContext(&off_the_record_context)->IsTor()'
+      return_if: 'off_the_record_context.IsTor()'

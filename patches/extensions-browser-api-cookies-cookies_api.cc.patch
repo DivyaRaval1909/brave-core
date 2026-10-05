@@ -1,5 +1,5 @@
 diff --git a/extensions/browser/api/cookies/cookies_api.cc b/extensions/browser/api/cookies/cookies_api.cc
-index 2bab9edc0a45a76fe27399697f97f4ddb0e89caf..55a1563f77dcfd7eb0d472753d0049b7c66c26e8 100644
+index 2bab9edc0a45a76fe27399697f97f4ddb0e89caf..d5a888123f8f8e701e5bd00142e0c1144a9aa85f 100644
 --- a/extensions/browser/api/cookies/cookies_api.cc
 +++ b/extensions/browser/api/cookies/cookies_api.cc
 @@ -152,6 +152,7 @@ CookiesEventRouter::~CookiesEventRouter() {
@@ -14,7 +14,7 @@ index 2bab9edc0a45a76fe27399697f97f4ddb0e89caf..55a1563f77dcfd7eb0d472753d0049b7
  
  void CookiesEventRouter::OnRelatedOffTheRecordBrowserContextCreated(
      content::BrowserContext& off_the_record_context) {
-+  if (Profile::FromBrowserContext(&off_the_record_context)->IsTor()) return;
++  if (off_the_record_context.IsTor()) return;
    // Start listening for cookie changes there. The OTR receiver may already
    // be bound if MaybeStartListening() raced this callback (e.g. the
    // off-the-record context already existed when StartObserving() was
