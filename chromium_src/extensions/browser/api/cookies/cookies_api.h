@@ -8,7 +8,6 @@
 
 #include <extensions/browser/api/cookies/cookies_api.h>  // IWYU pragma: export
 
-#include "chrome/browser/profiles/profile_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
