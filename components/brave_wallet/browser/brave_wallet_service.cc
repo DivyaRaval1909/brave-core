@@ -1616,6 +1616,17 @@ BraveWalletService::GetPendingSignSolTransactionsRequest(int32_t id) {
   return nullptr;
 }
 
+mojom::SignPolkadotTransactionRequestPtr
+BraveWalletService::GetPendingSignPolkadotTransactionRequest(int32_t id) {
+  for (auto& pending : sign_polkadot_transaction_requests_) {
+    if (pending.request->id == id) {
+      return pending.request.Clone();
+    }
+  }
+
+  return nullptr;
+}
+
 void BraveWalletService::AddSuggestTokenRequest(
     mojom::AddSuggestTokenRequestPtr request,
     mojom::EthereumProvider::RequestCallback callback,

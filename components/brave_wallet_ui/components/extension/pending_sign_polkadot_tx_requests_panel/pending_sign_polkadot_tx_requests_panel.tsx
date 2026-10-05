@@ -10,7 +10,10 @@ import { skipToken } from '@reduxjs/toolkit/query/react'
 import {
   useSignPolkadotTransactionsQueue, //
 } from '../../../common/hooks/use_sign_polkadot_tx_queue'
-import { useGetNetworkQuery } from '../../../common/slices/api.slice'
+import {
+  useGetNetworkQuery,
+  useGetPolkadotSignRequestDetailsQuery,
+} from '../../../common/slices/api.slice'
 
 // Components
 import SignPolkadotTxPanel from '../sign-panel/sign_polkadot_tx_panel'
@@ -34,6 +37,13 @@ export const PendingSignPolkadotTransactionRequestsPanel: React.FC = () => {
     selectedRequest ? selectedRequest.chainId : skipToken,
   )
 
+  // The description and fee are fetched here rather than gating the whole panel
+  // on them, so the risk step stays interactive while the decode is in flight.
+  const { data: details, isFetching: isFetchingDetails } =
+    useGetPolkadotSignRequestDetailsQuery(
+      selectedRequest ? selectedRequest.id : skipToken,
+    )
+
   // Loading
   if (!network || !selectedRequest || !signingAccount) {
     return <LoadingPanel />
@@ -42,6 +52,8 @@ export const PendingSignPolkadotTransactionRequestsPanel: React.FC = () => {
   return (
     <LongWrapper padding='0px'>
       <SignPolkadotTxPanel
+        details={details ?? null}
+        isFetchingDetails={isFetchingDetails}
         isSigningDisabled={isDisabled}
         network={network}
         queueLength={queueLength}

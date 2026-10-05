@@ -8,19 +8,38 @@
 
 #include <memory>
 
+#include "brave/components/brave_wallet/common/polkadot_bridge.mojom.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/webui_config.h"
-#include "content/public/common/url_constants.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "ui/webui/mojo_web_ui_controller.h"
 #include "ui/webui/untrusted_web_ui_controller.h"
 
 namespace polkadot {
 
-class UntrustedPolkadotUI : public ui::UntrustedWebUIController {
+class UntrustedPolkadotUI
+    : public ui::UntrustedWebUIController,
+      public ui::EnableMojoWebUI,
+      public brave_wallet::mojom::PolkadotBridgeUIHandler {
  public:
   explicit UntrustedPolkadotUI(content::WebUI* web_ui);
   UntrustedPolkadotUI(const UntrustedPolkadotUI&) = delete;
   UntrustedPolkadotUI& operator=(const UntrustedPolkadotUI&) = delete;
   ~UntrustedPolkadotUI() override;
+
+  void BindInterface(
+      mojo::PendingReceiver<brave_wallet::mojom::PolkadotBridgeUIHandler>
+          receiver);
+
+ private:
+  // mojom::PolkadotBridgeUIHandler:
+  void BindPolkadotBridge(
+      mojo::PendingRemote<brave_wallet::mojom::PolkadotBridge> bridge) override;
+
+  mojo::Receiver<brave_wallet::mojom::PolkadotBridgeUIHandler> receiver_{this};
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 };
 
 class UntrustedPolkadotUIConfig : public content::WebUIConfig {

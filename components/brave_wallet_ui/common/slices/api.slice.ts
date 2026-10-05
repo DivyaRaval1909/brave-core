@@ -225,6 +225,7 @@ export const {
   useGetPendingSignSolTransactionsRequestsQuery,
   useGetPendingSignCardanoTransactionRequestsQuery,
   useGetPendingSignPolkadotTransactionRequestsQuery,
+  useGetPolkadotSignRequestDetailsQuery,
   useGetPendingSignMessageErrorsQuery,
   useGetPendingSignMessageRequestsQuery,
   useGetPendingSwitchChainRequestQuery,

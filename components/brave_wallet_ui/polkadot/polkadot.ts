@@ -1,48 +1,123 @@
+
+import { PolkadotBridgeReceiver, PolkadotBridgeUIHandler, PolkadotBridgeInterface, PolkadotDecodedPayload } from 'gen/brave/components/brave_wallet/common/polkadot_bridge.mojom.m.js'
+
 import {
   TypeRegistry,
   Metadata,
-  GenericChainProperties,
 } from '@polkadot/types'
+import { allExtensions } from '@polkadot/types/extrinsic/signedExtensions'
 
-async function rpcCall(rpcUrl: string, method: string, params = []) {
-  const res = await fetch(rpcUrl, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ id: 1, jsonrpc: '2.0', method, params }),
-  })
-  const body = await res.json()
-  if (body.error) {
-    throw new Error(`RPC error: ${JSON.stringify(body.error)}`)
-  }
-  return body.result
+type HexString = `0x${string}`;
+
+export interface SignerPayloadJSON {
+  address: string;
+  assetId?: HexString;
+  blockHash: HexString;
+  blockNumber: HexString;
+  era: HexString;
+  genesisHash: HexString;
+  metadataHash?: HexString;
+  method: string;
+  mode?: number;
+  nonce: HexString;
+  specVersion: HexString;
+  tip: HexString;
+  transactionVersion: HexString;
+  signedExtensions: string[];
+  version: number;
+  withSignedTransaction?: boolean;
 }
 
-const registry = new TypeRegistry()
+const FAKE_SIGNATURE = new Uint8Array(256).fill(1)
 
-async function applyChainProperties(rpcUrl: string) {
-  const props = await rpcCall(rpcUrl, 'system_properties')
-
-  registry.setChainProperties(
-    new GenericChainProperties(registry, {
-      ss58Format: props.ss58Format,
-      tokenDecimals: props.tokenDecimals,
-      tokenSymbol: props.tokenSymbol,
-    }),
+function buildMockExtrinsic(registry: TypeRegistry, payload: SignerPayloadJSON) {
+  const extrinsic = registry.createType(
+    'Extrinsic',
+    { method: payload.method },
+    { version: payload.version },
   )
+
+  return extrinsic.addSignature(payload.address, FAKE_SIGNATURE, payload)
 }
 
-async function applyMetadata(hex: `0x${string}`, rpcUrl: string) {
-  const metadata = new Metadata(registry, hex)
-  registry.setMetadata(metadata)
-  await applyChainProperties(rpcUrl)
+function applyExtensionTypes(registry: TypeRegistry, metadata: Metadata) {
+  const identifiers = []
+  const userExtensions: Record<string, any> = {}
+  const derived = []
+
+  for (const { identifier, type } of metadata.asLatest.extrinsic.transactionExtensions) {
+    const name = identifier.toString()
+    identifiers.push(name)
+
+    if (!allExtensions[name]) {
+      const typeName = registry.createLookupType(type)
+      userExtensions[name] = { extrinsic: { [name]: typeName }, payload: {} }
+      derived.push(`${name}: ${registry.lookup.getName(type) || typeName}`)
+    }
+  }
+
+  registry.setSignedExtensions(identifiers, userExtensions)
+  return derived
 }
 
-const rpcUrl = 'https://polkadot-asset-hub-rpc.polkadot.io';
+const setupPolkadotBridge = () => {
+  const uiHandler = PolkadotBridgeUIHandler.getRemote()
+  uiHandler.bindPolkadotBridge(receiver.$.bindNewPipeAndPassRemote())
+}
 
-const metadataHex = await rpcCall(rpcUrl, 'state_getMetadata')
-await applyMetadata(metadataHex, rpcUrl)
 
-const methodHex = '0x0a030032fffa4729e6d1447a62c39b997ad75ddbaf80455ea44719b58ee4c03f6a14024913'
+class PolkadotBridge implements PolkadotBridgeInterface {
+  async decode(
+    metadataBytes: number[],
+    rawPayloadJson: string,
+  ): Promise<{ decoded: PolkadotDecodedPayload | null }> {
+    try {
+      // console.log('going to parse json payload now...')
+      // console.log(rawPayloadJson)
+      const payload: SignerPayloadJSON = JSON.parse(rawPayloadJson);
 
-const call = registry.createType('Call', methodHex)
-console.log(JSON.stringify(call.toHuman(), null, 2))
+      console.log(payload);
+
+      const registry = new TypeRegistry()
+      console.log(registry)
+      const metadata = new Metadata(registry, new Uint8Array(metadataBytes))
+      registry.setMetadata(metadata)
+      applyExtensionTypes(registry, metadata)
+
+      console.log('constructed full type registry')
+
+      const call = registry.createType('Call', payload.method)
+      const extrinsic = buildMockExtrinsic(registry, payload)
+
+      // console.log('going to return the following:')
+      const asHuman = JSON.stringify(call.toHuman())
+      const mockSignedExtrinsic = Array.from(extrinsic.toU8a())
+      // console.log(asHuman)
+      // console.log(mockSignedExtrinsic)
+
+      return {
+        decoded: {
+          asHuman,
+          mockSignedExtrinsic,
+          error: '',
+        },
+      }
+    } catch(e) {
+      console.error('polkadot bridge decode failed', e)
+      return {
+        decoded: {
+          asHuman: undefined,
+          mockSignedExtrinsic: undefined,
+          error: e instanceof Error
+            ? `${e.name}: ${e.message}\n${e.stack ?? ''}`
+            : String(e),
+        }
+      }
+    }
+  }
+}
+
+const bridge = new PolkadotBridge()
+const receiver = new PolkadotBridgeReceiver(bridge)
+
+setupPolkadotBridge();

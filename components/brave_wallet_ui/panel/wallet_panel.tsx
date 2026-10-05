@@ -25,35 +25,22 @@ import {
 } from '../common/constants/local-storage-keys'
 setIconBasePath('chrome://resources/brave-icons')
 
-async function PolkadotBridge() {
-  const bridgeFrameUrl = 'chrome-untrusted://polkadot-bridge/'
-
-  let element = document.createElement('iframe')
-  element.id = crypto.randomUUID()
+// The frame's bundle is large, so start it before React mounts. Readiness is
+// handshaked on the browser side; nothing here waits on it.
+function createPolkadotBridgeFrame() {
+  const element = document.createElement('iframe')
   element.style.display = 'none'
-  element.src = bridgeFrameUrl
-
-  await new Promise<void>((resolve, reject) => {
-    element.onload = () => {
-      console.log('loaded the polkadot-js bridge, yay!')
-      resolve()
-    }
-    element.onerror = () => {
-      reject(
-        new Error(`Failed to load Polkadot bridge iframe: ${bridgeFrameUrl}`),
-      )
-    }
-
-    document.body.appendChild(element)
-  })
+  element.src = 'chrome-untrusted://polkadot-bridge/'
+  element.onerror = () => {
+    console.error('failed to load the Polkadot bridge frame')
+  }
+  document.body.appendChild(element)
 }
 
 function App() {
   React.useEffect(() => {
     runLocalStorageMigrations()
   }, [])
-
-  PolkadotBridge();
 
   return (
     <Provider store={store}>
@@ -71,6 +58,7 @@ function App() {
 
 function initialize() {
   initLocale(loadTimeData.data_)
+  createPolkadotBridgeFrame()
   const root = createRoot(document.getElementById('mountPoint')!)
   root.render(
     <StyledComponentsProvider>

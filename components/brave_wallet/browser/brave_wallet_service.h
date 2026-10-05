@@ -361,6 +361,8 @@ class BraveWalletService : public KeyedService,
       int32_t id);
   mojom::SignCardanoTransactionRequestPtr
   GetPendingSingCardanoTransactionRequest(int32_t id);
+  mojom::SignPolkadotTransactionRequestPtr
+  GetPendingSignPolkadotTransactionRequest(int32_t id);
 
   void RemovePrefListenersForTests();
 

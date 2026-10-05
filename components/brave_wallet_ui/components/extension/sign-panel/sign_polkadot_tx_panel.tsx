@@ -10,6 +10,8 @@ import { BraveWallet, SignDataSteps } from '../../../constants/types'
 
 // Utils
 import { getLocale } from '../../../../common/locale'
+import Amount from '../../../utils/amount'
+import { Uint128ToBigInt } from '../../../utils/polkadot-utils'
 
 // Hooks
 import { useAccountOrb } from '../../../common/hooks/use-orb'
@@ -46,7 +48,8 @@ import {
 } from '../shared-panel-styles'
 
 import { Tooltip } from '../../shared/tooltip/index'
-import { Column, Text } from '../../shared/style'
+import LoadingSkeleton from '../../shared/loading-skeleton'
+import { Column, Row, Text } from '../../shared/style'
 
 interface Props {
   selectedRequest: BraveWallet.SignPolkadotTransactionRequest
@@ -56,6 +59,9 @@ interface Props {
   signingAccount: BraveWallet.AccountInfo
   queueLength: number
   queueNumber: number
+  // Null when the browser could not decode the request, which blocks signing.
+  details: BraveWallet.PolkadotSignRequestDetails | null
+  isFetchingDetails: boolean
 }
 
 // TODO: broken article link
@@ -68,13 +74,11 @@ const onClickLearnMore = () => {
   )
 }
 
-// The payload is shown verbatim: the call is still SCALE-encoded hex in
-// `method`, so there is nothing more readable to render yet.
-const formatPayload = (payloadJson: string): string => {
+const formatJson = (json: string): string => {
   try {
-    return JSON.stringify(JSON.parse(payloadJson), null, 2)
+    return JSON.stringify(JSON.parse(json), null, 2)
   } catch {
-    return payloadJson
+    return json
   }
 }
 
@@ -86,6 +90,8 @@ export const SignPolkadotTxPanel = ({
   queueNextSignTransaction,
   queueNumber,
   signingAccount,
+  details,
+  isFetchingDetails,
 }: Props) => {
   // custom hooks
   const orb = useAccountOrb(signingAccount)
@@ -96,10 +102,28 @@ export const SignPolkadotTxPanel = ({
   )
 
   // computed
+  // Fall back to the raw payload when the browser could not decode the call, so
+  // the user still sees something. Signing stays blocked below.
   const payload = React.useMemo(
-    () => formatPayload(selectedRequest.rawPayloadJson),
-    [selectedRequest.rawPayloadJson],
+    () =>
+      formatJson(details ? details.asHuman : selectedRequest.rawPayloadJson),
+    [details, selectedRequest.rawPayloadJson],
   )
+
+  const feeAmount = React.useMemo(() => {
+    const partialFee = Uint128ToBigInt(details?.fee?.partialFee ?? undefined)
+    if (partialFee === undefined) {
+      return undefined
+    }
+
+    return new Amount(partialFee.toString())
+      .divideByDecimals(network.decimals)
+      .formatAsAsset(6, network.symbol)
+  }, [details, network.decimals, network.symbol])
+
+  // An undescribed request must not be signable: the user would be approving
+  // something they were never shown.
+  const isSignDisabled = isSigningDisabled || !details
 
   // methods
   const onAcceptSigningRisks = React.useCallback(() => {
@@ -178,9 +202,41 @@ export const SignPolkadotTxPanel = ({
         </WarningBox>
       )}
       {signStep === SignDataSteps.SignData && (
-        <MessageBox width='100%'>
-          <DetailText style={{ whiteSpace: 'pre-wrap' }}>{payload}</DetailText>
-        </MessageBox>
+        <>
+          <MessageBox width='100%'>
+            {isFetchingDetails ? (
+              <LoadingSkeleton
+                width='100%'
+                height={80}
+              />
+            ) : (
+              <DetailText style={{ whiteSpace: 'pre-wrap' }}>
+                {payload}
+              </DetailText>
+            )}
+          </MessageBox>
+          <Row
+            justifyContent='space-between'
+            padding='8px 0px'
+          >
+            <Text
+              textColor='tertiary'
+              variant='small.regular'
+            >
+              {getLocale(S.BRAVE_WALLET_NETWORK_FEES)}
+            </Text>
+            {isFetchingDetails ? (
+              <LoadingSkeleton width={64} />
+            ) : (
+              <Text
+                textColor='primary'
+                variant='small.semibold'
+              >
+                {feeAmount ?? '--'}
+              </Text>
+            )}
+          </Row>
+        </>
       )}
       <Column
         fullWidth
@@ -205,7 +261,11 @@ export const SignPolkadotTxPanel = ({
                 ? onAcceptSigningRisks
                 : onSign
             }
-            disabled={isSigningDisabled}
+            disabled={
+              signStep === SignDataSteps.SignData
+                ? isSignDisabled
+                : isSigningDisabled
+            }
           />
         </SignPanelButtonRow>
       </Column>
