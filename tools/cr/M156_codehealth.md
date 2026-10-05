@@ -16,12 +16,12 @@ Upstream migrated `settings-payments-page` to Lit
 `RegisterPolymerTemplateModifications`, which never runs for a Lit element, so
 the hidden controls are visible again. This fails silently.
 
-- [ ] Port `br/payments_page.ts` to
+- [x] Port `br/payments_page.ts` to
       `chromium_src/chrome/browser/resources/settings/autofill_page/payments/payments_page.html.ts.lit_mangler.ts`
       and remove the Polymer override (as in the security page port):
-  - [ ] Hide `#manageLink` (declared in the element's `$`, so hide it rather
+  - [x] Hide `#manageLink` (declared in the element's `$`, so hide it rather
         than remove it).
-  - [ ] Hide `#cardBenefitsToggle`.
+  - [x] Hide `#cardBenefitsToggle`.
 
 ### Avatar button shows Google's "Sign in" pill again
 
@@ -37,11 +37,13 @@ A signed-out profile now gets the sign-in promo whenever
 extensions. Brave's `SHOULD_SHOW_SIGNIN_PROMO_COMMON` hook doesn't cover this
 path. The pill shows in regular windows when there's more than one profile.
 
-- [ ] `chromium_src/chrome/browser/signin/signin_promo_util.cc`: make
+- [x] `chromium_src/chrome/browser/signin/signin_promo_util.cc`: make
       `ComputeProfileMenuAvatarButtonPromoInfo()` run its callback with an empty
       `ProfileMenuAvatarButtonPromoInfo`, as `ShouldShowExtensionSignInPromo` is
-      already stubbed
-- [ ] Add a test with `kSigninAllowed` on that checks the avatar button never
+      already stubbed. Done as a plaster
+      (`rewrite/chrome/browser/signin/signin_promo_util.cc.yaml`), which also
+      replaced the `chromium_src` override
+- [x] Add a test with `kSigninAllowed` on that checks the avatar button never
       enters the promo state
 
 ### Presubmit skip list for tsconfig parse errors is dead
@@ -54,14 +56,17 @@ its entry now matches nothing. The next change to any of the 20 tsconfig files
 with trailing commas (e.g. `tsconfig.json`, `build/tsconfig.json`) fails
 presubmit.
 
-- [ ] `chromium_presubmit_config.json5:103`: rename `CheckParseErrors` to
+- [x] `chromium_presubmit_config.json5:103`: rename `CheckParseErrors` to
       `CheckJSONParseErrors`
-- [ ] `chromium_presubmit_config.json5:172`: drop `CheckRawPtrUsage`, deleted
+- [x] `chromium_presubmit_config.json5:172`: drop `CheckRawPtrUsage`, deleted
       before this range
       ([190dd427e740a](https://chromium.googlesource.com/chromium/src/+/190dd427e740a))
-- [ ] `script/chromium_presubmit_overrides.py` `setup_per_check_file_filter()`:
+- [x] `script/chromium_presubmit_overrides.py` `setup_per_check_file_filter()`:
       raise on keys that name no existing check, as `ApplyBanRuleExcludes`
-      already does for ban rules
+      already does for ban rules. Done in `PRESUBMIT.py`
+      (`ValidatePerCheckFilesToSkip()`), since `build/PRESUBMIT.py` installs the
+      filter without Chromium's checks; also dropped the dead
+      `CheckNoBannedFunctions` key
 
 ### Windows-only FontPrewarmer browser test doesn't compile
 
@@ -71,7 +76,7 @@ no `profile()`, and `browser.h` is now visibility-restricted
 The test was added during the cr156 rebase, but it is only built under `is_win`
 (`test/BUILD.gn:1261`), so Linux builds don't see it.
 
-- [ ] `browser/brave_font_prewarmer_tab_helper_browsertest.cc`: use
+- [x] `browser/brave_font_prewarmer_tab_helper_browsertest.cc`: use
       `GetProfile()` (lines 64, 89, 98) and `browser()->GetTabStripModel()`
       (line 86), and drop the `browser.h` include (line 12), as in
       [4beec1d68c91f](https://chromium.googlesource.com/chromium/src/+/4beec1d68c91f)
@@ -85,11 +90,11 @@ shows a Chrome tips bottom sheet (Google Lens, Enhanced Safe Browsing, …). Tha
 path doesn't depend on the segmentation platform Brave disables, and Brave has
 no override.
 
-- [ ] `rewrite/components/segmentation_platform/public/features.cc.yaml`: ship
+- [x] `rewrite/components/segmentation_platform/public/features.cc.yaml`: ship
       `kAndroidTipsNotifications` disabled, and add it to
       `base/compile_overridden_features.inc`
-- [ ] `app/feature_defaults_unittest.cc`: add it to the Android disabled list
-- [ ] Consider plastering the Java safe default in `ChromeFeatureList.java`
+- [x] `app/feature_defaults_unittest.cc`: add it to the Android disabled list
+- [x] Consider plastering the Java safe default in `ChromeFeatureList.java`
 
 ### Send-tab-to-self device picker shows Google's "Manage your devices" link
 
@@ -100,13 +105,16 @@ Google account device page. Brave only hides the legacy
 `ManageAccountDevicesLinkView` (bytecode super swap), so Brave Sync users with
 another device see the link.
 
-- [ ] Ship `kSendTabToSelfEnhancedBottomsheet` disabled
+- [x] Ship `kSendTabToSelfEnhancedBottomsheet` disabled
       (`components/send_tab_to_self/features.cc` plaster plus
       `base/compile_overridden_features.inc`), or hide `manage_devices_block` in
-      the new view
-- [ ] Same commit: decide whether to keep `kSendTabToSelfExtraEntryPoints`
+      the new view. Product wants the enhanced sheet, so it stays enabled and a
+      Java plaster on `EnhancedTargetDevicePickerView` hides
+      `manage_devices_block` instead
+- [x] Same commit: decide whether to keep `kSendTabToSelfExtraEntryPoints`
       ("Send to your devices" in the tab grid and toolbar long-press menus);
-      Brave's tests only disable it
+      Brave's tests only disable it. Kept: its entry points open the enhanced
+      sheet, which no longer shows the Google account link.
 
 ### Bookmark bar IPH is on by default
 
@@ -117,7 +125,7 @@ Brave already ships `kNtpSimplificationBookmarkBar` on (#38334), so the bar
 auto-hides after showing on the NTP for a number of days, and now this IPH shows
 too. It isn't in Brave's IPH disable list.
 
-- [ ] `rewrite/components/feature_engagement/public/feature_constants.cc.yaml`:
+- [x] `rewrite/components/feature_engagement/public/feature_constants.cc.yaml`:
       disable `kIPHBookmarkBarSimplifiedFeature`, and add it to
       `app/feature_defaults_unittest.cc`
 - [ ] Product: decide whether Brave wants the bookmark bar auto-hide at all
@@ -133,7 +141,7 @@ Upstream now passes the field to
 Brave's preempt still passes `last_query_.field_id` to
 `BraveHandleSuggestion()`, which anchors the email alias bubble on that field.
 
-- [ ] `rewrite/components/autofill/core/browser/ui/autofill_external_delegate.cc.yaml:27`:
+- [x] `rewrite/components/autofill/core/browser/ui/autofill_external_delegate.cc.yaml:27`:
       pass the `field_id` parameter instead
 
 ### iOS skips upstream's WebSocket block for local and WebUI pages
@@ -144,9 +152,50 @@ Upstream added a `ws(s)://` block to `CreateLocalBlockingJsonRuleList()` for
 Brave's override returns an empty rule list, so neither that rule nor the
 existing http(s) subresource rule is installed.
 
-- [ ] `chromium_src/ios/web/web_state/ui/wk_content_rule_list_util.mm:10`:
-      return the upstream rules plus a scoped `ignore-previous-rules` allow
-      entry for what Brave WebUIs need, as upstream's own allow entry does
+The override was added so WebUIs could open external links (originally Meld buy
+links in Wallet). Agreed with the iOS team: rather than a list of
+`ignore-previous-rules` exceptions, which would be fragile, route each case
+below through native (mojo) handlers on master, then drop the override.
+`//ios/web` opens a `target=_blank` link or `window.open()` from a WebUI as a
+WebKit popup, which upstream's rules block for `https`.
+
+- [ ] Leo conversation frame (`chrome-untrusted://leo-ai-conversation-entries`
+      in `chrome://leo-ai`): open these through the page handler (as
+      `OpenURLFromResponse` already does for web sources) instead of
+      `target=_blank`, under
+      `components/ai_chat/resources/untrusted_conversation_frame/components/`:
+  - [ ] markdown links and citations: `markdown_renderer/index.tsx:199`, `:213`
+  - [ ] search widget result cards and footer link:
+        `search_widget/search_widget.tsx:64`, `:87`, `:117`, `:317`
+  - [ ] search query links: `assistant_response/tool_event_search.tsx:31`
+- [ ] Leo rich search widget: its iframe document loads, but its scripts, styles
+      and fetches from `prod.browser-ai-includes.s.brave.app` (and possibly the
+      AI chat API host) match top URL `chrome://leo-ai` and would be blocked.
+      Not a link, so it needs a decision: a narrow allow entry for its origin,
+      or another way to host it (`assistant_response/rich_search_widget.tsx:87`)
+- [ ] Wallet (`chrome://wallet`): on iOS `chrome.tabs` is undefined, so these
+      use `window.open()`. Route them through a native handler, under
+      `components/brave_wallet_ui/`:
+  - [ ] block explorers (arbitrary, user-editable URLs):
+        `utils/block-explorer-utils.ts:151`
+  - [ ] Meld buy widget: `page/screens/buy/hooks/use_buy.ts:555`
+  - [ ] Meld terms of use:
+        `components/desktop/popup-modals/partners_consent_modal/partners_consent_modal.tsx:46`
+  - [ ] help center: `page/components/wallet_menus/wallet_settings_menu.tsx:109`
+  - [ ] `openTab()` and its callers: `utils/routes-utils.ts:409`
+  - [ ] static `target=_blank` links in `account-settings-modal.tsx`,
+        `add-imported-account-modal.tsx`, `enable-nft-discovery-modal.tsx`,
+        `hardware-wallet-connect/accounts_list.tsx`, `disclosures.tsx`,
+        `address-message.tsx`, `checksum_info.tsx` and `privacy-modal.tsx`
+- [ ] Then drop `chromium_src/ios/web/web_state/ui/wk_content_rule_list_util.mm`
+      so upstream's http(s), popup and WebSocket rules apply again, and make
+      sure upstream's `wk_content_rule_list_util_unittest.mm` and
+      `wk_content_rule_list_provider_unittest.mm` run and pass for Brave iOS
+
+Not affected: Wallet NFT, market and chart iframes load images through
+`chrome-untrusted://image`, which the rules don't block. `chrome://leo-ai`,
+`chrome://account`, `ads-internals` and `skus-internals` already open links
+natively or have none.
 
 ### Android crash reports and sponsored media get the short version
 
@@ -169,12 +218,12 @@ Upstream made `IsEnterpriseIsolatedModeProfile()` mutually exclusive with
 The rebase updated most call sites. These still treat isolated profiles as
 normal ones. The impact is low, since isolated mode needs enterprise policy.
 
-- [ ] `chromium_src/chrome/browser/ssl/https_upgrades_util.cc:19`
+- [x] `chromium_src/chrome/browser/ssl/https_upgrades_util.cc:19`
       (`NormalWindowHttpsOnly`)
-- [ ] `chromium_src/chrome/browser/ui/autofill/chrome_autofill_client.cc:50` and
+- [x] `chromium_src/chrome/browser/ui/autofill/chrome_autofill_client.cc:50` and
       `:101` (`kBraveAutofillPrivateWindows` gate)
-- [ ] `browser/ui/webui/ads_internals/ads_internals_ui.cc:170`
-- [ ] `browser/p3a/p3a_core_metrics.cc:45`
+- [x] `browser/ui/webui/ads_internals/ads_internals_ui.cc:170`
+- [x] `browser/p3a/p3a_core_metrics.cc:45`
 
 ## 2. Upcoming deprecations
 
@@ -190,10 +239,12 @@ with `//base/i18n:test_support`
 Upstream is also moving `GetConfiguredLocale()` to `GetDefaultIcuLocale()`
 ([aaccba3866072](https://chromium.googlesource.com/chromium/src/+/aaccba3866072)).
 
-- [ ] `components/brave_ads/core/internal/common/time/time_formatting_util_unittest.cc:23`,
+- [x] `components/brave_ads/core/internal/common/time/time_formatting_util_unittest.cc:23`,
       `:35`, `:46`, `:59`
-- [ ] `browser/brave_vpn/win/brave_vpn_wireguard_service/resources/resource_loader.cc:49`
-      (`GetConfiguredLocale()`)
+- [x] `browser/brave_vpn/win/brave_vpn_wireguard_service/resources/resource_loader.cc:49`
+      (`GetConfiguredLocale()`). Skipped: the service never sets the ICU locale,
+      so `GetDefaultIcuLocale()` would always return `en-US` and drop its
+      localization. Revisit when upstream removes `GetConfiguredLocale()`
 
 ### `BubbleDialogDelegate::set_shadow()`
 
@@ -201,12 +252,12 @@ Upstream is also moving `GetConfiguredLocale()` to `GetDefaultIcuLocale()`
 takes the elevation before the frame view exists
 ([03acd6864ec4c](https://chromium.googlesource.com/chromium/src/+/03acd6864ec4c)).
 
-- [ ] `browser/ui/views/brave_help_bubble/brave_help_bubble_delegate_view.cc:151`
-- [ ] Optional: replace `bubble_border()->set_md_shadow_elevation()` after
+- [x] `browser/ui/views/brave_help_bubble/brave_help_bubble_delegate_view.cc:151`
+- [x] Optional: replace `bubble_border()->set_md_shadow_elevation()` after
       creation with `.elevation`:
-  - [ ] `browser/ui/views/sidebar/sidebar_add_item_bubble_delegate_view.cc:114`
-  - [ ] `browser/ui/views/sidebar/sidebar_edit_item_bubble_delegate_view.cc:52`
-  - [ ] `browser/ui/views/sidebar/sidebar_item_added_feedback_bubble.cc:43`
+  - [x] `browser/ui/views/sidebar/sidebar_add_item_bubble_delegate_view.cc:114`
+  - [x] `browser/ui/views/sidebar/sidebar_edit_item_bubble_delegate_view.cc:52`
+  - [x] `browser/ui/views/sidebar/sidebar_item_added_feedback_bubble.cc:43`
 
 ### Renderer-initiated `OpenURLParams` will need an initiator state
 
@@ -219,16 +270,25 @@ Brave builds these params browser-side with `is_renderer_initiated = true`.
 - [ ] `browser/brave_ads/ads_service_delegate.cc:57`
 - [ ] `browser/ui/webui/new_tab_takeover/android/new_tab_takeover_ui.cc:171`
 
+Blocked until crbug.com/510258191 is enforced: neither site has a frame to take
+a state from (the ad opens from a notification; the NTT WebUI's state would make
+a `chrome://` document the initiator of another tab's navigation). Both rely on
+renderer-initiated for Android external-app handling, which will need another
+mechanism then.
+
 ### iOS `ApplicationLocaleStorage::Get()` → `GetTag()`
 
 Upstream is migrating callers before removing `Get()`
 ([0de7fece6adbe](https://chromium.googlesource.com/chromium/src/+/0de7fece6adbe)).
 Use `GetApplicationLocaleStorage()->GetTag().tag_string()`.
 
-- [ ] `ios/browser/api/brave_shields/adblock_service.mm:137`
-- [ ] `ios/browser/api/web_view/autofill/brave_web_view_autofill_client.mm:44`
-- [ ] `ios/browser/application_context/brave_application_context_impl.mm:68`
-- [ ] `ios/browser/safari_data_import/safari_data_importer_coordinator.mm:66`
+- [x] `ios/browser/api/brave_shields/adblock_service.mm:137`
+- [x] `ios/browser/api/web_view/autofill/brave_web_view_autofill_client.mm:44`.
+      Kept on `Get()`: `AutofillClient::GetAppLocale()` returns a
+      `const std::string&`, and upstream's `ChromeAutofillClientIOS` still uses
+      `Get()` for the same reason
+- [x] `ios/browser/application_context/brave_application_context_impl.mm:68`
+- [x] `ios/browser/safari_data_import/safari_data_importer_coordinator.mm:66`
 
 ## 3. Code-health migrations
 
@@ -237,7 +297,7 @@ Use `GetApplicationLocaleStorage()->GetTag().tag_string()`.
 Upstream is moving process IDs to the typed `ChildProcessId`
 ([6f7ff82eb0735](https://chromium.googlesource.com/chromium/src/+/6f7ff82eb0735)).
 
-- [ ] `browser/test/webui_subdomain_browsertest.cc:319`, `:324`: use `GetID()`
+- [x] `browser/test/webui_subdomain_browsertest.cc:319`, `:324`: use `GetID()`
 
 ### iOS Global Privacy Control set by `//ios/web`
 
@@ -253,6 +313,10 @@ Brave sets it on every navigation, including to false.
 - [ ] `chromium_src/ios/web/navigation/crw_wk_navigation_handler.mm:38`: drop
       the per-navigation setter
 
+Handed to the iOS team. `//ios/web` can't turn GPC back off once it's set in the
+WebView configuration, while Brave's pref can be toggled at runtime, so the
+per-navigation setter can't simply be dropped.
+
 ## 4. Obsolete Brave code
 
 ### `ViewShadow::OnLayerRecreated` workaround
@@ -262,7 +326,7 @@ swaps in the recreated layer before observers run
 ([2c8523a907b8d](https://chromium.googlesource.com/chromium/src/+/2c8523a907b8d)).
 Brave's copy never finds the old layer any more.
 
-- [ ] `browser/ui/views/view_shadow.cc:107`: remove the `OnLayerRecreated()`
+- [x] `browser/ui/views/view_shadow.cc:107`: remove the `OnLayerRecreated()`
       override and `layer_owner_observation_`, then check the window-close
       animation by hand
 
@@ -272,7 +336,7 @@ Upstream stopped registering a second extensions client in single-process mode
 ([c82bcddfb1391](https://chromium.googlesource.com/chromium/src/+/c82bcddfb1391)),
 which is the problem Brave's sharing worked around.
 
-- [ ] `rewrite/chrome/common/scoped_chrome_extensions_client.cc.yaml`: drop the
+- [x] `rewrite/chrome/common/scoped_chrome_extensions_client.cc.yaml`: drop the
       second and third substitutions, and the helpers in
       `chromium_src/chrome/common/scoped_chrome_extensions_client.cc:18-58`.
       Keep `rename_class`, and re-run the `--single-process`
@@ -300,7 +364,7 @@ reland returns by value again
 ([f8e1d7701b883](https://chromium.googlesource.com/chromium/src/+/f8e1d7701b883)),
 as it does at 155 and 157, so the plaster now matches upstream's one-liner.
 
-- [ ] Delete `rewrite/ui/views/layout/layout_manager_base.cc.yaml` and its patch
+- [x] Delete `rewrite/ui/views/layout/layout_manager_base.cc.yaml` and its patch
 
 ### Test filters for tests upstream removed or renamed
 
@@ -353,8 +417,10 @@ new test runs unfiltered, so retarget rather than delete.
 `prefs` property
 ([ca41f56fcdba8](https://chromium.googlesource.com/chromium/src/+/ca41f56fcdba8)).
 
-- [ ] `browser/resources/settings/brave_privacy_page/brave_personalization_options.html:128`:
-      drop `prefs="{{prefs}}"`
+- [x] `browser/resources/settings/brave_privacy_page/brave_personalization_options.html:128`:
+      drop `prefs="{{prefs}}"`. Also moved the `hr` class Brave adds to the
+      toggle into a lit_mangler: adding it from the parent's `ready()` races the
+      Lit element's first render
 
 ## 5. Optional
 
