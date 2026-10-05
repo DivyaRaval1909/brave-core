@@ -378,7 +378,7 @@ var package = Package(
     ),
     .target(
       name: "BraveWidgetsModels",
-      dependencies: ["FaviconModels"],
+      dependencies: ["BraveStrings", "BraveWallet", "FaviconModels"],
       sources: [
         "BraveWidgets.intentdefinition", "LockScreenFavoriteIntentHandler.swift",
         "FavoritesWidgetData.swift", "DisabledShortcutsWidgetData.swift",
