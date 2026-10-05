@@ -15,6 +15,7 @@ source_set("os_crypt") {
 
   deps = [
     "//base",
+    "//chrome/browser/first_run",
     "//chrome/browser/os_crypt",
     "//chrome/common:constants",
     "//chrome/elevation_service:public_headers",
@@ -33,7 +34,9 @@ source_set("unit_tests") {
     ":os_crypt",
     "//base",
     "//base/test:test_support",
+    "//chrome/browser/first_run",
     "//chrome/browser/os_crypt",
+    "//chrome/common:constants",
     "//chrome/elevation_service:public_headers",
     "//components/prefs:test_support",
     "//testing/gmock",

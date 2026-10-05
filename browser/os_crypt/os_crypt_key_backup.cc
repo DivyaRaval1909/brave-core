@@ -14,6 +14,7 @@
 #include "base/base64.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/functional/bind.h"
@@ -23,11 +24,14 @@
 #include "base/json/values_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "brave/browser/os_crypt/os_crypt_key_backup_com_bridge.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/os_crypt/app_bound_encryption_provider_win.h"
 #include "components/prefs/pref_service.h"
 
@@ -46,9 +50,6 @@ constexpr char kAppBoundEncryptedKeyHistoryKey[] =
     "app_bound_encrypted_key_history";
 constexpr char kWrappedKeyKey[] = "wrapped_key";
 constexpr char kCreatedKey[] = "created";
-
-constexpr char kHistogramSuffix[] = "OSCryptKeyBackup";
-constexpr char kRestoreHistogramSuffix[] = "OSCryptKeyRestore";
 
 // Restore log schema: a single, ever-growing list of records, one per
 // restore attempt. Unlike the backup file's history, this is never
@@ -143,6 +144,25 @@ base::ListValue HistoryToValue(const History& history) {
   return list;
 }
 
+// Renames an unreadable backup file aside (e.g. "OSCrypt Key Backup" ->
+// "OSCrypt Key Backup.<timestamp>.corrupt") instead of letting the next
+// write silently clobber it. The file could be hand-recoverable (partial
+// JSON, one bad entry rather than a fully garbled file), so preserving it
+// costs nothing - it's not in the way of anything, and it's never read back
+// by this code. Timestamped so repeated corruption across launches doesn't
+// clobber an earlier preserved copy. Best-effort: a failure to rename just
+// means the fresh write proceeds and overwrites the file as before.
+void PreserveUnreadableBackup(const base::FilePath& path) {
+  const base::FilePath aside_path = path.AddExtensionASCII(base::StrCat(
+      {base::NumberToString(base::Time::Now().InMillisecondsSinceUnixEpoch()),
+       ".corrupt"}));
+  base::File::Error error;
+  if (!base::ReplaceFile(path, aside_path, &error)) {
+    LOG(WARNING) << "OSCrypt key backup: failed to preserve unreadable " << path
+                 << ": " << base::File::ErrorToString(error);
+  }
+}
+
 Backup ReadBackup(const base::FilePath& path) {
   Backup backup;
 
@@ -195,8 +215,13 @@ bool WriteBackup(const base::FilePath& path, const Backup& backup) {
     return false;
   }
 
-  return base::ImportantFileWriter::WriteFileAtomically(path, *json,
-                                                        kHistogramSuffix);
+  // No histogram suffix: a custom suffix would log to a suffixed
+  // ImportantFile.* histogram that isn't registered in histograms.xml's
+  // ImportantFileClients variant list (an upstream file), so the default
+  // (unsuffixed, still captured in the ".All" aggregate) is used instead -
+  // matching ad_block_dat_cache_manager.cc and ads_service_impl.cc, the
+  // only other brave-core callers of WriteFileAtomically.
+  return base::ImportantFileWriter::WriteFileAtomically(path, *json);
 }
 
 // Appends one record to the restore log at `path`: a timestamp plus the
@@ -235,8 +260,7 @@ void AppendRestoreRecord(const base::FilePath& path,
   if (!json) {
     return;
   }
-  base::ImportantFileWriter::WriteFileAtomically(path, *json,
-                                                 kRestoreHistogramSuffix);
+  base::ImportantFileWriter::WriteFileAtomically(path, *json);
 }
 
 // Converts a wrapped key as stored (base64) into raw bytes for `unwrap`, or
@@ -350,6 +374,7 @@ OSCryptKeyBackupResult AppendOSCryptKeyBackupIfNew(const base::FilePath& path,
                                                    std::string encrypted_key,
                                                    std::string app_bound_key) {
   Backup backup = ReadBackup(path);
+  const BackupReadResult existing_result = backup.result;
   bool changed = false;
 
   if (!encrypted_key.empty()) {
@@ -371,6 +396,12 @@ OSCryptKeyBackupResult AppendOSCryptKeyBackupIfNew(const base::FilePath& path,
   // re-wraps it (e.g. after a Windows credential change), which is rare. Worth
   // recording in case there is a problem to help the customer narrow down when
   // it happened.
+
+  // About to overwrite an unreadable file - preserve it first rather than
+  // silently losing a copy that could have been hand-recoverable.
+  if (existing_result == BackupReadResult::kUnreadable) {
+    PreserveUnreadableBackup(path);
+  }
 
   if (!WriteBackup(path, backup)) {
     LOG(ERROR) << "OSCrypt key backup: failed to write " << path;
@@ -416,6 +447,13 @@ void MaybeRestoreOSCryptKey(const base::FilePath& user_data_dir,
       ReadBackup(user_data_dir.Append(kOSCryptKeyBackupFileName));
   switch (backup.result) {
     case BackupReadResult::kAbsent:
+      // A fresh profile has no key and no backup yet - that's expected, not
+      // a loss, and logging it here would bury the rare real losses (an
+      // established profile losing its key) in noise, since the restore log
+      // is never trimmed.
+      if (first_run::IsChromeFirstRun()) {
+        return;
+      }
       dpapi_outcome = OSCryptKeyRestoreResult::kKeyMissingNoBackup;
       AppendRestoreRecord(user_data_dir.Append(kOSCryptKeyRestoreFileName),
                           dpapi_outcome, app_bound_outcome);

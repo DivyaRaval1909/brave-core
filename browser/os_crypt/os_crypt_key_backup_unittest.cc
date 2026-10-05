@@ -14,6 +14,8 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/command_line.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -23,8 +25,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/win/scoped_localalloc.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/os_crypt/app_bound_encryption_provider_win.h"
 #include "chrome/browser/os_crypt/app_bound_encryption_win.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -226,6 +230,29 @@ class OSCryptKeyBackupTest : public ::testing::Test {
     return list ? list->size() : 0;
   }
 
+  // How many "<original name>.<something>.corrupt" siblings exist next to
+  // the backup file - i.e. how many times an unreadable backup has been
+  // preserved aside rather than silently overwritten.
+  //
+  // Enumerates everything in the temp dir and filters by suffix manually,
+  // rather than passing a "*.corrupt" pattern to FileEnumerator - on
+  // Windows, FindFirstFile's "*.*"/"name.*" matching has a legacy
+  // short-filename quirk where it also matches names with no extension at
+  // all (e.g. the live backup file itself), so a native glob here would
+  // silently overcount.
+  size_t PreservedCorruptFileCount() const {
+    base::FileEnumerator enumerator(temp_dir_.GetPath(), /*recursive=*/false,
+                                    base::FileEnumerator::FILES);
+    size_t count = 0;
+    for (base::FilePath name = enumerator.Next(); !name.empty();
+         name = enumerator.Next()) {
+      if (name.MatchesExtension(FILE_PATH_LITERAL(".corrupt"))) {
+        ++count;
+      }
+    }
+    return count;
+  }
+
   base::ScopedTempDir temp_dir_;
   ::testing::NiceMock<MockAppBoundEncryptionOverrides> mock_app_bound_;
   ScopedOverridesForTesting overrides_{mock_app_bound_};
@@ -302,14 +329,31 @@ TEST_F(OSCryptKeyBackupTest, EvictsTheOldestEntryPastTheCap) {
   EXPECT_EQ(std::string::npos, Contents().find(first));
 }
 
-TEST_F(OSCryptKeyBackupTest, ReplacesABackupItCannotRead) {
+// A corrupt file is replaced, but not silently lost - it's hand-recoverable
+// in principle (e.g. a single bad entry rather than fully garbled), so a
+// copy is preserved aside rather than clobbered.
+TEST_F(OSCryptKeyBackupTest, ReplacesABackupItCannotReadButPreservesACopy) {
   ASSERT_TRUE(base::WriteFile(path(), "{ this is not json"));
+  ASSERT_EQ(0u, PreservedCorruptFileCount());
 
   const std::string wrapped = WrapWithDPAPI("key-one");
   EXPECT_EQ(OSCryptKeyBackupResult::kAppended,
             AppendOSCryptKeyBackupIfNew(path(), wrapped, ""));
   EXPECT_NE(std::string::npos, Contents().find(wrapped));
   EXPECT_EQ(1u, EncryptedKeyHistorySize());
+  EXPECT_EQ(1u, PreservedCorruptFileCount());
+}
+
+// A good, readable backup is appended to in place - nothing is preserved
+// aside, since there's nothing corrupt to preserve.
+TEST_F(OSCryptKeyBackupTest, DoesNotPreserveAnythingForAReadableBackup) {
+  ASSERT_EQ(OSCryptKeyBackupResult::kAppended,
+            AppendOSCryptKeyBackupIfNew(path(), WrapWithDPAPI("key-one"), ""));
+
+  EXPECT_EQ(OSCryptKeyBackupResult::kAppended,
+            AppendOSCryptKeyBackupIfNew(path(), WrapWithDPAPI("key-two"), ""));
+
+  EXPECT_EQ(0u, PreservedCorruptFileCount());
 }
 
 TEST_F(OSCryptKeyBackupTest, OmitsAnAbsentAppBoundKey) {
@@ -391,9 +435,33 @@ class OSCryptKeyRestoreTest : public OSCryptKeyBackupTest {
     local_state_.registry()->RegisterStringPref("os_crypt.encrypted_key", "");
     local_state_.registry()->RegisterStringPref(
         os_crypt_async::kAppBoundEncryptedKeyPrefName, "");
+    // Default to "not first run," matching the overwhelming majority of
+    // these tests, which exercise an established profile losing its key -
+    // `SkipsLoggingOnAFreshProfile` below overrides this to cover the
+    // opposite case.
+    SetIsChromeFirstRunForTesting(false);
+  }
+
+  void TearDown() override {
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        switches::kForceFirstRun);
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(switches::kNoFirstRun);
+    first_run::ResetCachedSentinelDataForTesting();
+    OSCryptKeyBackupTest::TearDown();
   }
 
  protected:
+  // `first_run::IsChromeFirstRun()` is backed by a process-global cache plus
+  // command-line switches - there is no direct setter, so this is the
+  // established pattern (see e.g. onboarding_unittest.cc) for forcing it
+  // deterministically in a test.
+  void SetIsChromeFirstRunForTesting(bool is_first_run) {
+    first_run::ResetCachedSentinelDataForTesting();
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        is_first_run ? switches::kForceFirstRun : switches::kNoFirstRun);
+    ASSERT_EQ(is_first_run, first_run::IsChromeFirstRun());
+  }
+
   std::string LiveKey() {
     return local_state_.GetString("os_crypt.encrypted_key");
   }
@@ -497,11 +565,25 @@ TEST_F(OSCryptKeyRestoreTest, LeavesAKeyThatIsAlreadyThereAlone) {
   EXPECT_EQ(OSCryptKeyRestoreResult::kNotAttempted, RecordedResult());
 }
 
+// An established profile (not first run - the fixture default) losing its
+// key with no backup to fall back on is a real loss worth recording.
 TEST_F(OSCryptKeyRestoreTest, ReportsWhenThereIsNothingToRestoreFrom) {
   MaybeRestoreOSCryptKey(temp_dir_.GetPath(), &local_state_);
 
   EXPECT_TRUE(LiveKey().empty());
   EXPECT_EQ(OSCryptKeyRestoreResult::kKeyMissingNoBackup, RecordedResult());
+}
+
+// A brand-new profile has no key and no backup yet - that's the expected
+// state for every fresh install, not a loss, so nothing is logged.
+TEST_F(OSCryptKeyRestoreTest, SkipsLoggingOnAFreshProfile) {
+  SetIsChromeFirstRunForTesting(true);
+
+  MaybeRestoreOSCryptKey(temp_dir_.GetPath(), &local_state_);
+
+  EXPECT_TRUE(LiveKey().empty());
+  EXPECT_EQ(0u, RestoreLogSize());
+  EXPECT_EQ(OSCryptKeyRestoreResult::kNotAttempted, RecordedResult());
 }
 
 TEST_F(OSCryptKeyRestoreTest, ReportsAnUnusableBackup) {

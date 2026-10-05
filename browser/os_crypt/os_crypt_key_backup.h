@@ -74,7 +74,9 @@ enum class OSCryptKeyRestoreResult {
   // `Local State` already had a key, or (for the app-bound-specific value)
   // no app-bound restore was attempted at all. Nothing was read from disk.
   kNotAttempted = 0,
-  // The key was missing and there is no backup to put back.
+  // The key was missing and there is no backup to put back. Not recorded
+  // on a brand-new profile (`first_run::IsChromeFirstRun()`), since that's
+  // the expected state for every fresh install, not a loss.
   kKeyMissingNoBackup = 1,
   // The key was missing and a backup exists but could not be used (the file
   // is unreadable, or this key's history is empty).
@@ -124,6 +126,16 @@ void MaybeRestoreOSCryptKey(const base::FilePath& user_data_dir,
 // task. Does nothing until a key exists to copy. Gated behind
 // `kBraveOSCryptKeyRestore`, same as `MaybeRestoreOSCryptKey` - there's no
 // point keeping a backup around for a restore path that's disabled.
+//
+// Called once per launch, from `PostBrowserStart()`. The app-bound key can
+// still be resolving asynchronously at that point (its provider may be
+// minting a brand-new key via a round trip to the elevation service), so a
+// key minted during the current launch isn't guaranteed to be backed up
+// until the next one - the same trade-off `MaybeRestoreOSCryptKey` already
+// accepts by only restoring (and not treating as a loss) on anything but
+// the very first launch. Corruption in that narrow window is accepted
+// rather than adding a second backup call keyed off OSCrypt's own async
+// init completion.
 void MaybeBackupOSCryptKey(const base::FilePath& user_data_dir,
                            PrefService* local_state);
 
