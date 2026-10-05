@@ -3217,13 +3217,15 @@ class UnstoppableDomainsUnitTest : public JsonRpcServiceUnitTest {
   }
 
  protected:
-  std::unique_ptr<JsonRpcEndpointHandler> eth_mainnet_endpoint_handler_;
-  std::unique_ptr<JsonRpcEndpointHandler> polygon_endpoint_handler_;
-  std::unique_ptr<JsonRpcEndpointHandler> base_endpoint_handler_;
-
   std::unique_ptr<UDGetManyCallHandler> eth_mainnet_getmany_call_handler_;
   std::unique_ptr<UDGetManyCallHandler> polygon_getmany_call_handler_;
   std::unique_ptr<UDGetManyCallHandler> base_getmany_call_handler_;
+
+  // Declared after the call handlers they point into so they are destroyed
+  // first.
+  std::unique_ptr<JsonRpcEndpointHandler> eth_mainnet_endpoint_handler_;
+  std::unique_ptr<JsonRpcEndpointHandler> polygon_endpoint_handler_;
+  std::unique_ptr<JsonRpcEndpointHandler> base_endpoint_handler_;
 
   void HandleRequest(const network::ResourceRequest& request) {
     url_loader_factory_.ClearResponses();
