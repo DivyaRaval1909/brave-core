@@ -6,7 +6,7 @@
 import '$test-utils/disable_custom_elements'
 
 import * as React from 'react'
-import { render, screen, act, waitFor } from '@testing-library/react'
+import { render, screen, act, waitFor, within } from '@testing-library/react'
 import { MockContext } from '../../state/mock_context'
 import { clearAllDataForTesting } from '$web-common/api'
 import ConversationsList from './index'
@@ -347,6 +347,109 @@ describe('ConversationsList', () => {
           screen.queryByText('AI_CHAT_CONVERSATION_LIST_FILTER_NO_RESULTS'),
         ).not.toBeInTheDocument()
       })
+    })
+  })
+
+  describe('Conversation search', () => {
+    async function renderWithConversationSearch(
+      searchConversations: Mojom.AIChatUIHandlerInterface['searchConversations'],
+    ) {
+      const { container } = await renderConversationsList(
+        <MockContext
+          service={{
+            getConversations: () =>
+              Promise.resolve({ conversations: mockConversations }),
+          }}
+          uiHandler={{ searchConversations }}
+          initialState={{
+            serviceState: { isStoragePrefEnabled: true },
+          }}
+        >
+          <ConversationsList />
+        </MockContext>,
+      )
+      await waitFor(() => {
+        expect(screen.getByText('How to use TypeScript')).toBeInTheDocument()
+      })
+      return container
+    }
+
+    function search(container: HTMLElement, value: string) {
+      const leoInput = container.querySelector('leo-input')!
+      act(() => {
+        leoInput.dispatchEvent(
+          Object.assign(new Event('input', { bubbles: true }), { value }),
+        )
+      })
+    }
+
+    it('shows conversations that match by content in their own section', async () => {
+      const searchConversations = jest.fn(async (query: string) => ({
+        matches:
+          query === 'block trackers'
+            ? [
+                {
+                  conversationUuid: 'uuid-2',
+                  snippet: 'Shields block trackers by default.',
+                },
+              ]
+            : [],
+      }))
+      const container = await renderWithConversationSearch(searchConversations)
+
+      search(container, 'block trackers')
+
+      const section = await screen.findByTestId('conversation-search-results')
+      expect(
+        within(section).getByText(
+          'AI_CHAT_CONVERSATION_LIST_CONVERSATION_SEARCH_HEADING',
+        ),
+      ).toBeInTheDocument()
+      expect(
+        within(section).getByText('Brave browser features'),
+      ).toBeInTheDocument()
+      expect(
+        within(section).getByText('Shields block trackers by default.'),
+      ).toBeInTheDocument()
+      expect(searchConversations).toHaveBeenCalledWith('block trackers')
+      // No title matches, but a conversation did match by content.
+      expect(
+        screen.queryByText('AI_CHAT_CONVERSATION_LIST_FILTER_NO_RESULTS'),
+      ).not.toBeInTheDocument()
+    })
+
+    it('leaves out conversations that are no longer listed', async () => {
+      const container = await renderWithConversationSearch(async () => ({
+        matches: [{ conversationUuid: 'deleted', snippet: 'Gone' }],
+      }))
+
+      search(container, 'block trackers')
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('AI_CHAT_CONVERSATION_LIST_FILTER_NO_RESULTS'),
+        ).toBeInTheDocument()
+      })
+      expect(
+        screen.queryByTestId('conversation-search-results'),
+      ).not.toBeInTheDocument()
+    })
+
+    it('shows no section where conversation search is unavailable', async () => {
+      const searchConversations = jest.fn(async () => ({ matches: null }))
+      const container = await renderWithConversationSearch(searchConversations)
+
+      search(container, 'block trackers')
+
+      await waitFor(() => {
+        expect(searchConversations).toHaveBeenCalledWith('block trackers')
+      })
+      expect(
+        screen.getByText('AI_CHAT_CONVERSATION_LIST_FILTER_NO_RESULTS'),
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByTestId('conversation-search-results'),
+      ).not.toBeInTheDocument()
     })
   })
 })

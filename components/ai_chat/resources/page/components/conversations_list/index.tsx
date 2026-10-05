@@ -13,6 +13,7 @@ import * as Mojom from '../../../common/mojom'
 import { useAIChat } from '../../state/ai_chat_context'
 import { getLocale } from '$web-common/locale'
 import { useConversation } from '../../state/conversation_context'
+import useSearchDelay from '../../hooks/useSearchDelay'
 import Alert from '@brave/leo/react/alert'
 import Button from '@brave/leo/react/button'
 import { Link } from '$web-common/useRoute'
@@ -173,6 +174,51 @@ function ConversationItem(props: ConversationItemProps) {
   )
 }
 
+interface ConversationSearchItemProps extends ConversationsListProps {
+  conversation: Mojom.Conversation
+  snippet: string | undefined
+}
+
+// A conversation that matches the search query by its content, shown with the
+// passage that matched.
+function ConversationSearchItem(props: ConversationSearchItemProps) {
+  const conversationContext = useConversation()
+
+  const { uuid } = props.conversation
+  const title =
+    props.conversation.title || getLocale(S.AI_CHAT_CONVERSATION_LIST_UNTITLED)
+
+  return (
+    <li>
+      <Link
+        className={classnames(
+          styles.navItem,
+          uuid === conversationContext.conversationUuid && styles.navItemActive,
+        )}
+        onClick={() => props.setIsConversationsListOpen?.(false)}
+        href={`/${uuid}`}
+      >
+        <div className={styles.conversationSearchItem}>
+          <div
+            className={styles.text}
+            title={title}
+          >
+            {title}
+          </div>
+          {props.snippet && (
+            <div
+              className={styles.conversationSearchSnippet}
+              data-testid='conversation-search-snippet'
+            >
+              {props.snippet}
+            </div>
+          )}
+        </div>
+      </Link>
+    </li>
+  )
+}
+
 interface ConversationsListProps {
   setIsConversationsListOpen?: (value: boolean) => unknown
 }
@@ -195,6 +241,21 @@ export default function ConversationsList(props: ConversationsListProps) {
       return title.toLowerCase().includes(lower)
     })
   }, [startedNonTemporaryConversations, conversationTitleSearch])
+
+  // Conversations matching by content are searched for once typing pauses, as
+  // brave://history searches its history semantically.
+  const conversationSearch = useSearchDelay(conversationTitleSearch)
+  const { data: conversationSearchMatches } =
+    aiChatContext.api.useSearchConversations(conversationSearch)
+  const conversationSearchResults = (
+    (conversationTitleSearch && conversationSearchMatches)
+    || []
+  ).flatMap((match) => {
+    const conversation = startedNonTemporaryConversations.find(
+      (c) => c.uuid === match.conversationUuid,
+    )
+    return conversation ? [{ conversation, snippet: match.snippet }] : []
+  })
 
   return (
     <>
@@ -267,8 +328,31 @@ export default function ConversationsList(props: ConversationsListProps) {
                 {getLocale(S.CHAT_UI_NOTICE_CONVERSATION_HISTORY_EMPTY)}
               </Alert>
             )}
+          {conversationSearchResults.length > 0 && (
+            <section
+              className={styles.conversationSearch}
+              data-testid='conversation-search-results'
+            >
+              <div className={styles.conversationSearchHeading}>
+                {getLocale(
+                  S.AI_CHAT_CONVERSATION_LIST_CONVERSATION_SEARCH_HEADING,
+                )}
+              </div>
+              <ol>
+                {conversationSearchResults.map(({ conversation, snippet }) => (
+                  <ConversationSearchItem
+                    key={conversation.uuid}
+                    {...props}
+                    conversation={conversation}
+                    snippet={snippet}
+                  />
+                ))}
+              </ol>
+            </section>
+          )}
           {conversationTitleSearch
-            && conversationTitleSearchResults.length === 0 && (
+            && conversationTitleSearchResults.length === 0
+            && conversationSearchResults.length === 0 && (
               <div className={styles.conversationTitleSearchNoResults}>
                 <span>
                   {getLocale(S.AI_CHAT_CONVERSATION_LIST_FILTER_NO_RESULTS)}
