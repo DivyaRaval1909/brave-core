@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
@@ -61,7 +60,7 @@ class BraveFontPrewarmerTabHelperBrowserTest : public InProcessBrowserTest {
     // Make the test server the default search provider, so that its pages
     // count as search results pages.
     TemplateURLService* service =
-        TemplateURLServiceFactory::GetForProfile(browser()->profile());
+        TemplateURLServiceFactory::GetForProfile(browser()->GetProfile());
     search_test_utils::WaitForTemplateURLServiceToLoad(service);
     TemplateURLData data;
     data.SetShortName(u"Test");
@@ -86,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(BraveFontPrewarmerTabHelperBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
 
   TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+      TemplateURLServiceFactory::GetForProfile(browser()->GetProfile());
   const GURL search_results_page_url =
       service->GetDefaultSearchProvider()->GenerateSearchURL(
           UIThreadSearchTermsData());
@@ -96,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(BraveFontPrewarmerTabHelperBrowserTest,
   ASSERT_TRUE(content::ExecJs(web_contents, "true"));
 
   EXPECT_TRUE(browser()
-                  ->profile()
+                  ->GetProfile()
                   ->GetPrefs()
                   ->GetList(kSearchResultsPageFontsPref)
                   .empty());
