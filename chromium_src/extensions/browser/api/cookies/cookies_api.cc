@@ -3,9 +3,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "chrome/browser/extensions/api/cookies/cookies_api.h"
+#include "extensions/browser/api/cookies/cookies_api.h"
 
-#include <chrome/browser/extensions/api/cookies/cookies_api.cc>
+#include "chrome/browser/profiles/profile.h"
+
+#include <extensions/browser/api/cookies/cookies_api.cc>
 
 namespace extensions {
 
