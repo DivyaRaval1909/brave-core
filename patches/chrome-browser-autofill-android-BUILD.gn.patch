@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/autofill/android/BUILD.gn b/chrome/browser/autofill/android/BUILD.gn
-index 7cd94d8185626223b071ede48603277aa384c639..41122697b6fc7507b8d6e39c43e92c7f698be7e5 100644
+index 431e7a4daec9ea731190d98779a1068ba685fbb6..706aee6bc6603eb111ef0c7e2208a73864c2b86a 100644
 --- a/chrome/browser/autofill/android/BUILD.gn
 +++ b/chrome/browser/autofill/android/BUILD.gn
 @@ -125,6 +125,7 @@ android_library("java") {

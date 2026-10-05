@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/tabs/recent_tabs_sub_menu_model_browsertest.cc b/chrome/browser/ui/tabs/recent_tabs_sub_menu_model_browsertest.cc
-index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e6a024c12 100644
+index f4cc0e361431dd26296065fdb677b629a52ae576..4851dcd1bc24068f3866328d709ea6c8a8bafe59 100644
 --- a/chrome/browser/ui/tabs/recent_tabs_sub_menu_model_browsertest.cc
 +++ b/chrome/browser/ui/tabs/recent_tabs_sub_menu_model_browsertest.cc
-@@ -204,6 +204,9 @@ class RecentTabsSubMenuModelTest : public InProcessBrowserTest {
+@@ -203,6 +203,9 @@ class RecentTabsSubMenuModelTest : public InProcessBrowserTest {
      return new_browser;
    }
  
@@ -12,7 +12,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
   private:
    std::unique_ptr<syncer::DataTypeProcessor> sync_processor_;
  };
-@@ -248,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
+@@ -242,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
  }
  
  IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
@@ -21,7 +21,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    FakeIconDelegate fake_delegate;
    AppMenuIconController app_menu_icon_controller(browser()->GetProfile(),
-@@ -333,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest, NoTabs) {
+@@ -334,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest, NoTabs) {
  
  // Test enabled "Recently closed" header with no foreign tabs.
  IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
@@ -30,7 +30,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    DisableSync();
  
-@@ -372,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
+@@ -373,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
  
  // Test recently closed groups with no foreign tabs.
  IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
@@ -39,7 +39,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
  
-@@ -429,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
+@@ -430,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
  }
  
  IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
@@ -48,7 +48,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
  
-@@ -479,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
+@@ -480,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
  }
  
  IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
@@ -57,7 +57,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    DisableSync();
  
-@@ -530,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
+@@ -531,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
  }
  
  IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
@@ -66,7 +66,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    DisableSync();
  
-@@ -632,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
+@@ -633,7 +636,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
  }
  
  IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
@@ -75,7 +75,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    DisableSync();
  
-@@ -689,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
+@@ -690,7 +693,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
  }
  
  IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
@@ -84,7 +84,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
  
-@@ -747,7 +750,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
+@@ -748,7 +751,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
  }
  
  IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
@@ -93,7 +93,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    DisableSync();
  
-@@ -935,7 +938,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest, OtherDevicesDynamicUpdate) {
+@@ -936,7 +939,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest, OtherDevicesDynamicUpdate) {
    VerifyModel(model, kDataAfterUpdate);
  }
  
@@ -102,7 +102,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    EnableSync();
  
-@@ -974,7 +977,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest, MaxSessionsAndRecency) {
+@@ -975,7 +978,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest, MaxSessionsAndRecency) {
  }
  
  IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
@@ -111,7 +111,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    EnableSync();
  
-@@ -1018,7 +1021,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
+@@ -1019,7 +1022,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
  }
  
  IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
@@ -120,7 +120,7 @@ index dda3597fc95f7793eaefbdbe6e152615c101303c..c5d1b802c417683a4f7731aa5a67c64e
    Init();
    DisableSync();
    // Ensure the policy is explicitly false to start with.
-@@ -1101,7 +1104,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
+@@ -1102,7 +1105,7 @@ IN_PROC_BROWSER_TEST_F(RecentTabsSubMenuModelTest,
  }
  
  #if !BUILDFLAG(IS_CHROMEOS)

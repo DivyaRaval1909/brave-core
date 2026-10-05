@@ -1,8 +1,8 @@
 diff --git a/third_party/blink/renderer/build/scripts/make_instrumenting_probes.py b/third_party/blink/renderer/build/scripts/make_instrumenting_probes.py
-index 5c69d890f08dab4704febc450578fcc9f7e16114..530417c35cd2515e5b35e046b58ffea0445199dd 100644
+index 6d1ea523aa7fef4c8a7b2887a0b3d23e84bb08ed..7ebde13a9c82cac5161535fc61e0a5c080801110 100644
 --- a/third_party/blink/renderer/build/scripts/make_instrumenting_probes.py
 +++ b/third_party/blink/renderer/build/scripts/make_instrumenting_probes.py
-@@ -308,5 +308,6 @@ def main():
+@@ -319,5 +319,6 @@ def main():
          h_file.close()
  
  

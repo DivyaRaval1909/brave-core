@@ -1,8 +1,8 @@
 diff --git a/components/permissions/permission_context_base.cc b/components/permissions/permission_context_base.cc
-index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a6679cd4c12 100644
+index a9204cee72fb0ec230c168a33635761a34f555bb..5e29c5ca7b4cb3e19bdb87b1e74d1aa043d3f738 100644
 --- a/components/permissions/permission_context_base.cc
 +++ b/components/permissions/permission_context_base.cc
-@@ -93,13 +93,13 @@ void LogPermissionBlockedMessage(content::RenderFrameHost* rfh,
+@@ -94,13 +94,13 @@ void LogPermissionBlockedMessage(content::RenderFrameHost* rfh,
  }  // namespace
  
  // static
@@ -19,7 +19,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      content::BrowserContext* browser_context,
      ContentSettingsType content_settings_type,
      network::mojom::PermissionsPolicyFeature permissions_policy_feature)
-@@ -110,12 +110,12 @@ PermissionContextBase::PermissionContextBase(
+@@ -111,12 +111,12 @@ PermissionContextBase::PermissionContextBase(
        << content_settings_type_;
  }
  
@@ -34,7 +34,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      std::unique_ptr<PermissionRequestData> request_data,
      BrowserPermissionCallback callback) {
    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-@@ -283,18 +283,18 @@ void PermissionContextBase::RequestPermission(
+@@ -284,18 +284,18 @@ void PermissionContextBase::RequestPermission(
    DecidePermission(std::move(request_data), std::move(callback));
  }
  
@@ -56,7 +56,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      content::WebContents* web_contents,
      std::unique_ptr<PermissionRequestData> request_data,
      PermissionRequest::PermissionDecidedCallback permission_decided_callback,
-@@ -304,11 +304,11 @@ PermissionContextBase::CreatePermissionRequest(
+@@ -305,11 +305,11 @@ PermissionContextBase::CreatePermissionRequest(
        std::move(request_finished_callback), UsesAutomaticEmbargo());
  }
  
@@ -70,7 +70,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      const PermissionRequestID& id) const {
    const auto request = pending_requests_.find(id.ToString());
  
-@@ -319,12 +319,12 @@ const PermissionRequest* PermissionContextBase::FindPermissionRequest(
+@@ -320,12 +320,12 @@ const PermissionRequest* PermissionContextBase::FindPermissionRequest(
    return &*(request->second.first);
  }
  
@@ -85,7 +85,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      const PermissionRequestData& request_data,
      content::RenderFrameHost* render_frame_host) const {
    if (base::FeatureList::IsEnabled(blink::features::kGeolocationElement) &&
-@@ -348,7 +348,7 @@ content::PermissionResult PermissionContextBase::GetPermissionStatus(
+@@ -349,7 +349,7 @@ content::PermissionResult PermissionContextBase::GetPermissionStatus(
                               request_data.embedding_origin);
  }
  
@@ -94,7 +94,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      const PermissionResolver& resolver,
      content::RenderFrameHost* render_frame_host,
      const GURL& requesting_origin,
-@@ -491,7 +491,7 @@ content::PermissionResult PermissionContextBase::GetPermissionStatus(
+@@ -493,7 +493,7 @@ content::PermissionResult PermissionContextBase::GetPermissionStatus(
                                     retrieved_permission_data);
  }
  
@@ -103,7 +103,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      const blink::mojom::PermissionDescriptorPtr& permission_descriptor,
      content::RenderFrameHost* render_frame_host,
      const GURL& requesting_origin,
-@@ -501,10 +501,10 @@ content::PermissionResult PermissionContextBase::GetPermissionStatus(
+@@ -503,10 +503,10 @@ content::PermissionResult PermissionContextBase::GetPermissionStatus(
                               embedding_origin);
  }
  
@@ -116,7 +116,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      const GURL& requesting_origin,
      const GURL& embedding_origin) const {
    if (IsRestrictedToSecureOrigins()) {
-@@ -516,7 +516,7 @@ bool PermissionContextBase::IsPermissionAvailableToOrigins(
+@@ -518,7 +518,7 @@ bool PermissionContextBase::IsPermissionAvailableToOrigins(
      // possible as this corresponds to the requirements of the secure contexts
      // spec and matches what is implemented in blink. Right now we just check
      // the top level and requesting origins.
@@ -125,7 +125,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
              requesting_origin, embedding_origin) &&
          !network::IsUrlPotentiallyTrustworthy(embedding_origin)) {
        return false;
-@@ -526,7 +526,7 @@ bool PermissionContextBase::IsPermissionAvailableToOrigins(
+@@ -528,7 +528,7 @@ bool PermissionContextBase::IsPermissionAvailableToOrigins(
  }
  
  content::PermissionResult
@@ -134,7 +134,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      content::WebContents* web_contents,
      content::PermissionResult result,
      const GURL& requesting_origin,
-@@ -571,7 +571,7 @@ PermissionContextBase::UpdatePermissionStatusWithDeviceStatus(
+@@ -573,7 +573,7 @@ PermissionContextBase::UpdatePermissionStatusWithDeviceStatus(
    return result;
  }
  
@@ -143,7 +143,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
                                              const GURL& embedding_origin) {
    if (!content_settings::WebsiteSettingsRegistry::GetInstance()->Get(
            content_settings_type())) {
-@@ -584,11 +584,11 @@ void PermissionContextBase::ResetPermission(const GURL& requesting_origin,
+@@ -586,11 +586,11 @@ void PermissionContextBase::ResetPermission(const GURL& requesting_origin,
                                        content_settings_type(), base::Value());
  }
  
@@ -157,7 +157,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
    const std::string param = base::GetFieldTrialParamValue(
        kPermissionsKillSwitchFieldStudy,
        PermissionUtil::GetPermissionString(content_settings_type_));
-@@ -596,7 +596,7 @@ bool PermissionContextBase::IsPermissionKillSwitchOn() const {
+@@ -598,7 +598,7 @@ bool PermissionContextBase::IsPermissionKillSwitchOn() const {
    return param == kPermissionsKillSwitchBlockedValue;
  }
  
@@ -166,7 +166,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      content::RenderFrameHost* render_frame_host,
      const GURL& requesting_origin,
      const GURL& embedding_origin) const {
-@@ -606,7 +606,7 @@ PermissionSetting PermissionContextBase::GetPermissionStatusInternal(
+@@ -608,7 +608,7 @@ PermissionSetting PermissionContextBase::GetPermissionStatusInternal(
                               content_settings_type());
  }
  
@@ -175,7 +175,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      std::unique_ptr<PermissionRequestData> request_data,
      BrowserPermissionCallback callback) {
    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-@@ -615,7 +615,7 @@ void PermissionContextBase::DecidePermission(
+@@ -617,7 +617,7 @@ void PermissionContextBase::DecidePermission(
    // origin displayed in the prompt should never differ from the top-level
    // origin. Storage access API requests are excluded as they are expected to
    // request permissions from the frame origin needing access.
@@ -184,7 +184,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
               request_data->requesting_origin, request_data->embedding_origin) ||
           request_data->requesting_origin == request_data->embedding_origin ||
           content_settings_type_ == ContentSettingsType::STORAGE_ACCESS);
-@@ -637,8 +637,8 @@ void PermissionContextBase::DecidePermission(
+@@ -639,8 +639,8 @@ void PermissionContextBase::DecidePermission(
    }
  
    auto decided_cb = base::BindRepeating(
@@ -195,7 +195,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
                                     weak_factory_.GetWeakPtr(), web_contents,
                                     request_data->id);
    PermissionRequestID permission_request_id = request_data->id;
-@@ -659,7 +659,7 @@ void PermissionContextBase::DecidePermission(
+@@ -661,7 +661,7 @@ void PermissionContextBase::DecidePermission(
    permission_request_manager->AddRequest(rfh, std::move(request));
  }
  
@@ -204,7 +204,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      const permissions::PermissionPromptDecision& decision,
      const PermissionRequestData& request_data) {
    UserMadePermissionDecision(request_data.id, request_data.requesting_origin,
-@@ -689,18 +689,18 @@ void PermissionContextBase::PermissionDecided(
+@@ -691,18 +691,18 @@ void PermissionContextBase::PermissionDecided(
                        persist, /*permission_result=*/nullptr, decision);
  }
  
@@ -226,7 +226,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      permissions::Observer* permission_observer) {
    if (permission_observers_.empty() &&
        !content_setting_observer_registered_by_subclass_) {
-@@ -711,7 +711,7 @@ void PermissionContextBase::AddObserver(
+@@ -713,7 +713,7 @@ void PermissionContextBase::AddObserver(
    permission_observers_.AddObserver(permission_observer);
  }
  
@@ -235,7 +235,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      permissions::Observer* permission_observer) {
    permission_observers_.RemoveObserver(permission_observer);
    if (permission_observers_.empty() &&
-@@ -723,13 +723,13 @@ void PermissionContextBase::RemoveObserver(
+@@ -725,13 +725,13 @@ void PermissionContextBase::RemoveObserver(
  }
  
  std::unique_ptr<PermissionResolver>
@@ -251,7 +251,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      content::WebContents* web_contents) {
    bool has_device_permission;
    if (has_device_permission_for_test_.has_value()) {
-@@ -764,7 +764,7 @@ void PermissionContextBase::MaybeUpdateCachedHasDevicePermission(
+@@ -766,7 +766,7 @@ void PermissionContextBase::MaybeUpdateCachedHasDevicePermission(
    }
  }
  
@@ -260,7 +260,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      const PermissionRequestData& request_data,
      const permissions::PermissionPromptDecision& decision) {
    // Note that rfh may be null, see crbug.com/426909787.
-@@ -782,7 +782,7 @@ content::PermissionResult PermissionContextBase::ComputeNewPermissionResult(
+@@ -784,7 +784,7 @@ content::PermissionResult PermissionContextBase::ComputeNewPermissionResult(
        content::PermissionStatusSource::UNSPECIFIED, new_value);
  }
  
@@ -269,7 +269,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      const PermissionRequestData& request_data,
      BrowserPermissionCallback callback,
      bool persist,
-@@ -820,7 +820,7 @@ void PermissionContextBase::NotifyPermissionSet(
+@@ -822,7 +822,7 @@ void PermissionContextBase::NotifyPermissionSet(
      content::WebContents* web_contents =
          content::WebContents::FromRenderFrameHost(rfh);
      request->second.first->set_request_finished_callback(base::BindOnce(
@@ -278,7 +278,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
          weak_factory_.GetWeakPtr(), web_contents, request_data.id,
          std::move(callback), decision.overall_decision, new_permission_result));
    } else {
-@@ -828,13 +828,13 @@ void PermissionContextBase::NotifyPermissionSet(
+@@ -830,13 +830,13 @@ void PermissionContextBase::NotifyPermissionSet(
    }
  }
  
@@ -294,7 +294,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      content::WebContents* web_contents,
      const PermissionRequestID& id,
      BrowserPermissionCallback callback,
-@@ -850,7 +850,7 @@ void PermissionContextBase::CleanUpRequestEmbeddedPermissionElement(
+@@ -852,7 +852,7 @@ void PermissionContextBase::CleanUpRequestEmbeddedPermissionElement(
    CleanUpRequest(web_contents, id);
  }
  
@@ -303,7 +303,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      const PermissionRequestData& request_data,
      const PermissionSetting& setting,
      bool is_one_time) {
-@@ -888,7 +888,7 @@ void PermissionContextBase::UpdateSetting(
+@@ -890,7 +890,7 @@ void PermissionContextBase::UpdateSetting(
            content_settings_type(), setting, constraints);
  }
  
@@ -312,7 +312,7 @@ index e74cc6937bf957b690ae224a78aa60135c44ddce..06c7a60bcab8785639935bd0e6c50a66
      content::RenderFrameHost* rfh) const {
    // Some features don't have an associated permissions policy yet. Allow those.
    if (permissions_policy_feature_ ==
-@@ -899,7 +899,7 @@ bool PermissionContextBase::PermissionAllowedByPermissionsPolicy(
+@@ -901,7 +901,7 @@ bool PermissionContextBase::PermissionAllowedByPermissionsPolicy(
    return rfh->IsFeatureEnabled(permissions_policy_feature_);
  }
  

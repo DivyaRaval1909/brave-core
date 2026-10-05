@@ -1,5 +1,5 @@
 diff --git a/content/renderer/render_frame_impl.cc b/content/renderer/render_frame_impl.cc
-index 8d7c579bafe1b0a9dfd9a7496246228c8bbf8730..4323fba94d4c86218e86313c3de5cee48849aa26 100644
+index 6533c6f9a58d686a340bf0422f2cce067640b9d8..d17806e017af40533248a4f9f60b3cc13d90bcf7 100644
 --- a/content/renderer/render_frame_impl.cc
 +++ b/content/renderer/render_frame_impl.cc
 @@ -5044,6 +5044,7 @@ bool RenderFrameImpl::ShouldUseUserAgentOverride() const {

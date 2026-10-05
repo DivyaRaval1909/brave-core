@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/views/autofill/popup/popup_view_views.cc b/chrome/browser/ui/views/autofill/popup/popup_view_views.cc
-index 3febe2d2e25ae1aedee321958664c774f2f3038a..94bf5b300041042959921b09e2e6ae64f6e0cb14 100644
+index e436528136a2f2c674570cc03a844963ebf842f0..45793059c875419156457ec4b9b66aa9d73f33a1 100644
 --- a/chrome/browser/ui/views/autofill/popup/popup_view_views.cc
 +++ b/chrome/browser/ui/views/autofill/popup/popup_view_views.cc
-@@ -1317,7 +1317,7 @@ void PopupViewViews::InitViews() {
+@@ -1349,7 +1349,7 @@ void PopupViewViews::InitViews() {
          ImageFetcherServiceFactory::GetForKey(profile->GetProfileKey())
              ->GetImageFetcher(
                  image_fetcher::ImageFetcherConfig::kInMemoryWithDiskCache);

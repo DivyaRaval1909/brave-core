@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/renderer_context_menu/render_view_context_menu.h b/chrome/browser/renderer_context_menu/render_view_context_menu.h
-index 1ae42733a07e4d753e215adf56128beebce0ea4f..7cb95cf0542d11a9137def0cb633751dc5d7f7aa 100644
+index d45ba8e2ddcba43acb4e41f61791474bada19bb1..b0af75bf9c9efd07cb57cdc7812269d5ffbe45d7 100644
 --- a/chrome/browser/renderer_context_menu/render_view_context_menu.h
 +++ b/chrome/browser/renderer_context_menu/render_view_context_menu.h
-@@ -235,6 +235,7 @@ class RenderViewContextMenu
+@@ -233,6 +233,7 @@ class RenderViewContextMenu
    // Returns true if keyboard lock is active and requires the user to press and
    // hold escape to exit exclusive access mode.
    bool IsPressAndHoldEscRequiredToExitFullscreen() const;

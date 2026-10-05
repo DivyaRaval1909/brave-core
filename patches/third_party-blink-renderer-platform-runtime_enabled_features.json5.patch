@@ -1,5 +1,5 @@
 diff --git a/third_party/blink/renderer/platform/runtime_enabled_features.json5 b/third_party/blink/renderer/platform/runtime_enabled_features.json5
-index 2292d62615f6cc14bbb5097c7fda266de894c1cc..8eebfc291eabb8a20557a9a7261c5c2773638b01 100644
+index bcf45b34db3ea50bad14aafa830caff2c4f21c35..f1204d1f056be9dde7103be5e65185bc80faa50c 100644
 --- a/third_party/blink/renderer/platform/runtime_enabled_features.json5
 +++ b/third_party/blink/renderer/platform/runtime_enabled_features.json5
 @@ -319,6 +319,7 @@
@@ -112,7 +112,7 @@ index 2292d62615f6cc14bbb5097c7fda266de894c1cc..8eebfc291eabb8a20557a9a7261c5c27
        public: true,
      },
      {
-@@ -3983,7 +3992,7 @@
+@@ -3987,7 +3996,7 @@
          "Android": "test",
          "default": "",
        },
@@ -121,7 +121,7 @@ index 2292d62615f6cc14bbb5097c7fda266de894c1cc..8eebfc291eabb8a20557a9a7261c5c27
        copied_from_base_feature_if: "overridden",
      },
      {
-@@ -4359,6 +4368,7 @@
+@@ -4363,6 +4372,7 @@
      // "experimental" is the support on other platforms.
      {
        name: "MiddleClickAutoscroll",
@@ -129,7 +129,7 @@ index 2292d62615f6cc14bbb5097c7fda266de894c1cc..8eebfc291eabb8a20557a9a7261c5c27
        status: "test",
      },
      // Killswitch for crbug.com/40062462 fix.
-@@ -4863,6 +4873,7 @@
+@@ -4867,6 +4877,7 @@
      {
        // PARAKEET ad serving runtime flag/JS API.
        name: "Parakeet",
@@ -137,7 +137,7 @@ index 2292d62615f6cc14bbb5097c7fda266de894c1cc..8eebfc291eabb8a20557a9a7261c5c27
        origin_trial_feature_name: "Parakeet",
      },
      {
-@@ -5078,6 +5089,7 @@
+@@ -5082,6 +5093,7 @@
        //
        // It also has some feature params defined throughout the codebase.
        name: "Prerender2",
@@ -145,7 +145,7 @@ index 2292d62615f6cc14bbb5097c7fda266de894c1cc..8eebfc291eabb8a20557a9a7261c5c27
        status: "stable",
      },
      {
-@@ -5282,6 +5294,7 @@
+@@ -5286,6 +5298,7 @@
      // but we still keep this flag for future phase tests.
      {
        name: "ReduceUserAgentMinorVersion",
@@ -153,7 +153,7 @@ index 2292d62615f6cc14bbb5097c7fda266de894c1cc..8eebfc291eabb8a20557a9a7261c5c27
        status: "stable",
      },
      {
-@@ -6731,7 +6744,7 @@
+@@ -6735,7 +6748,7 @@
          "ChromeOS": "stable",
          "default": "",
        },
@@ -162,7 +162,7 @@ index 2292d62615f6cc14bbb5097c7fda266de894c1cc..8eebfc291eabb8a20557a9a7261c5c27
        copied_from_base_feature_if: "overridden",
      },
      {
-@@ -6903,6 +6916,7 @@
+@@ -6907,6 +6920,7 @@
      },
      {
        name: "UserMediaElement",
@@ -170,7 +170,7 @@ index 2292d62615f6cc14bbb5097c7fda266de894c1cc..8eebfc291eabb8a20557a9a7261c5c27
        status: "stable",
        public: true,
      },
-@@ -7752,5 +7766,10 @@
+@@ -7756,5 +7770,10 @@
        // crbug.com/435623334.
        name: "XSLTSpecialTrial",
      },

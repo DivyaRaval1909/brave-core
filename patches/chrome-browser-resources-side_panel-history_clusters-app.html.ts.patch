@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/resources/side_panel/history_clusters/app.html.ts b/chrome/browser/resources/side_panel/history_clusters/app.html.ts
-index 9276e87e8d156faf0a497fe25fdb1ff106a80afd..86d512837eb507d177b50c92855060e5e42b1cc9 100644
+index fd7dd69ec6fd73d7e16f80aa6aeb3460a16d1d41..f932ec3eda00d2e0d5e39be82c510b012b733437 100644
 --- a/chrome/browser/resources/side_panel/history_clusters/app.html.ts
 +++ b/chrome/browser/resources/side_panel/history_clusters/app.html.ts
-@@ -21,12 +21,6 @@ export function getHtml(this: HistoryClustersAppElement) {
+@@ -20,12 +20,6 @@ export function getHtml(this: HistoryClustersAppElement) {
  ${this.enableHistoryEmbeddings_ ? html`
  <div id="historyEmbeddingsDisclaimer">
    $i18n{historyEmbeddingsDisclaimer}

@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/extensions/BUILD.gn b/chrome/browser/extensions/BUILD.gn
-index 45ffea4f8d3b9c1b906dbfb2af90650461e3a7e9..ad380e9c35f1223cebdf04c367af1bcca1975fe3 100644
+index bbe0fe895fe3077b7f4992d324e02d0dab8001c6..ac479cef659a7793b74d382dc261c3c28ee5fb39 100644
 --- a/chrome/browser/extensions/BUILD.gn
 +++ b/chrome/browser/extensions/BUILD.gn
 @@ -2,6 +2,7 @@
@@ -10,7 +10,7 @@ index 45ffea4f8d3b9c1b906dbfb2af90650461e3a7e9..ad380e9c35f1223cebdf04c367af1bcc
  import("//build/config/chromebox_for_meetings/buildflags.gni")
  import("//build/config/features.gni")
  import("//build/config/ozone.gni")
-@@ -646,6 +647,7 @@ source_set("extensions") {
+@@ -651,6 +652,7 @@ source_set("extensions") {
      "//ui/native_window_tracker",
      "//ui/shell_dialogs",
    ]
@@ -18,7 +18,7 @@ index 45ffea4f8d3b9c1b906dbfb2af90650461e3a7e9..ad380e9c35f1223cebdf04c367af1bcc
    public_deps = [
      "//chrome/browser/extensions/api/messaging",
      "//chrome/browser/media/webrtc",
-@@ -689,7 +691,7 @@ source_set("extensions") {
+@@ -694,7 +696,7 @@ source_set("extensions") {
        "//chrome/browser/ui/android/tab_model",
      ]
  
@@ -27,7 +27,7 @@ index 45ffea4f8d3b9c1b906dbfb2af90650461e3a7e9..ad380e9c35f1223cebdf04c367af1bcc
        sources += [
          # These files are temporary workarounds to allow for a lightweight
          # extensions runtime in desktop-android builds. They should be removed
-@@ -2040,6 +2042,7 @@ source_set("unit_tests") {
+@@ -2053,6 +2055,7 @@ source_set("unit_tests") {
      "//base",
      "//base/test:test_config",
      "//base/test:test_support",

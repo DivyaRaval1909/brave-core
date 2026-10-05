@@ -1,8 +1,8 @@
 diff --git a/content/public/browser/content_browser_client.h b/content/public/browser/content_browser_client.h
-index 6e730455c66df584a721a2b4720f25bf9844f16d..3281aae89c0deb05f91f56df773451fb0693cb8b 100644
+index 983b9bdeb3c40499c8fb952ee2def18d4667e45a..cfe676493326e055d654600f502886d087431e59 100644
 --- a/content/public/browser/content_browser_client.h
 +++ b/content/public/browser/content_browser_client.h
-@@ -3382,6 +3382,20 @@ class CONTENT_EXPORT ContentBrowserClient {
+@@ -3407,6 +3407,20 @@ class CONTENT_EXPORT ContentBrowserClient {
    virtual bool OriginSupportsConcreteCrossOriginIsolation(
        content::BrowserContext* browser_context,
        const url::Origin& origin);

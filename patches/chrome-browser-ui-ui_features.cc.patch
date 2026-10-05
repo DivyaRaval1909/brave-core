@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/ui_features.cc b/chrome/browser/ui/ui_features.cc
-index a57cf7468d6fceeeba4db1c89c012976169822fc..5f9958bf7c23a99100b931f2e291bde4ce2a21ac 100644
+index a4a76f5146ae2070abf2e1bc95fae2ebae1525e3..0df31606467c70a4323a209ec73e9da05965eb10 100644
 --- a/chrome/browser/ui/ui_features.cc
 +++ b/chrome/browser/ui/ui_features.cc
-@@ -130,7 +130,7 @@ BASE_FEATURE(kFeedbackDisabledDialog, base::FEATURE_DISABLED_BY_DEFAULT);
+@@ -140,7 +140,7 @@ BASE_FEATURE(kFeedbackDisabledDialog, base::FEATURE_DISABLED_BY_DEFAULT);
  
  // Enables the feature to remove the last confirmation dialog when relaunching
  // to update Chrome.
@@ -11,7 +11,7 @@ index a57cf7468d6fceeeba4db1c89c012976169822fc..5f9958bf7c23a99100b931f2e291bde4
  
  BASE_FEATURE(kLegacySearchIntegrityCheck, base::FEATURE_DISABLED_BY_DEFAULT);
  #endif
-@@ -148,7 +148,7 @@ BASE_FEATURE(kExtensionsPinnedByDefault, base::FEATURE_DISABLED_BY_DEFAULT);
+@@ -158,7 +158,7 @@ BASE_FEATURE(kExtensionsPinnedByDefault, base::FEATURE_ENABLED_BY_DEFAULT);
  #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
  // Shows an infobar on PDFs offering to become the default PDF viewer if Chrome
  // isn't the default already.
@@ -20,7 +20,7 @@ index a57cf7468d6fceeeba4db1c89c012976169822fc..5f9958bf7c23a99100b931f2e291bde4
  
  BASE_FEATURE(kSeparateDefaultAndPinPrompt,
  #if BUILDFLAG(IS_WIN)
-@@ -256,13 +256,8 @@ BASE_FEATURE(kNewTabButtonContextMenu, base::FEATURE_ENABLED_BY_DEFAULT);
+@@ -266,13 +266,8 @@ BASE_FEATURE(kNewTabButtonContextMenu, base::FEATURE_ENABLED_BY_DEFAULT);
  
  // Enables preview images in tab-hover cards.
  // https://crbug.com/41439486
@@ -36,7 +36,7 @@ index a57cf7468d6fceeeba4db1c89c012976169822fc..5f9958bf7c23a99100b931f2e291bde4
  
  BASE_FEATURE(kTabModalUsesDesktopWidget, base::FEATURE_DISABLED_BY_DEFAULT);
  
-@@ -367,7 +362,7 @@ BASE_FEATURE(kNonMilestoneUpdateToast, base::FEATURE_ENABLED_BY_DEFAULT);
+@@ -372,7 +367,7 @@ BASE_FEATURE(kNonMilestoneUpdateToast, base::FEATURE_ENABLED_BY_DEFAULT);
  BASE_FEATURE(kRespectShouldTriggerSessionRestoreOnDesktop,
               base::FEATURE_ENABLED_BY_DEFAULT);
  
