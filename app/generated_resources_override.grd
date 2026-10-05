@@ -663,10 +663,6 @@ are declared in tools/grit/grit_args.gni.
         </if>
       <if expr="not use_titlecase">
         </if>
-      <if expr="use_titlecase">
-        </if>
-      <if expr="not use_titlecase">
-        </if>
       <if expr="is_macosx">
         </if>
       <if expr="not is_macosx">
@@ -1243,9 +1239,6 @@ are declared in tools/grit/grit_args.gni.
         </if>
       <if expr="is_chromeos">
         </if>
-      <message name="IDS_RELAUNCH_RECOMMENDED_BODY_SCHEDULE" desc="The body text for the scheduled restart reminder bubble dialog." translateable="false">
-        Restart now to finish updating, or restart next time you're idle for 5 minutes. Your open tabs and windows will restore. Private windows won't reopen.
-      </message>
       </if>
 
     <if expr="not is_android and not is_chromeos">
